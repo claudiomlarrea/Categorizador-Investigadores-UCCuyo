@@ -23,9 +23,11 @@ _GRILLA_SECTION_NAMES = [
 
 _RE_SCORE_LINE = re.compile(r"^\s*(\d{1,4})\s*$")
 _RE_CATEGORY = re.compile(
-    r"(?i)CATEGOR[IÍ]A\s+RESULTANTE\s*:\s*(?:N[ºo°]\s*:\s*)?"
-    r"([IVXLC]+)\b|"
-    r"(?i)CATEGOR[IÍ]A\s+RESULTANTE\s*:\s*([A-ZÁÉÍÓÚÜÑa-záéíóúñü\s]+?)\s+N[ºo°]\s*:\s*([IVXLC]+)",
+    r"(?i)(?:"
+    r"CATEGOR[IÍ]A\s+RESULTANTE\s*:\s*(?:N[ºo°]\s*:\s*)?([IVXLC]+)\b"
+    r"|"
+    r"CATEGOR[IÍ]A\s+RESULTANTE\s*:\s*([A-ZÁÉÍÓÚÜÑa-záéíóúüñ\s]+?)\s+N[ºo°]\s*:\s*([IVXLC]+)"
+    r")",
 )
 _RE_CATEGORY_LABEL = re.compile(
     r"(?i)(superior|principal|independiente|adjunto|asistente|becario)",
