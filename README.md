@@ -63,11 +63,36 @@ Abrí `http://localhost:8501`, cargá un PDF o TXT y descargá los informes.
 - `data/cvar_ejemplos/` — CVars de Virna Vinader, Diego Kasshua, Young, Larrea, Codorniu
 - `data/valoraciones_referencia/` — grillas manuales de comparación
 
-## Próximo paso: GitHub + Streamlit Cloud
+## Tests de regresión
 
-1. Inicializar repositorio y subir a GitHub.
-2. Desplegar `app.py` en [Streamlit Cloud](https://streamlit.io/cloud).
-3. Compartir el enlace con el equipo de investigación.
+```bash
+./scripts/run_tests.sh
+```
+
+## Deploy en GitHub + Streamlit Cloud
+
+1. Autenticarse en GitHub (una vez):
+
+```bash
+gh auth login -h github.com
+```
+
+2. Crear repo y pushear:
+
+```bash
+chmod +x scripts/deploy_github.sh
+./scripts/deploy_github.sh
+```
+
+3. En [Streamlit Cloud](https://share.streamlit.io):
+   - **New app** → repositorio `claudiomlarrea/Categorizador-Investigadores-UCCuyo`
+   - **Branch:** `main`
+   - **Main file:** `app.py`
+   - Dependencias: `requirements.txt` (raíz)
+
+4. Compartir la URL `*.streamlit.app` con el equipo de investigación.
+
+**Nota:** la comparación con grillas `.doc` usa `textutil` (solo macOS). En la nube funcionan PDF/TXT/DOCX; grillas `.doc` antiguas conviene subirlas como `.docx`.
 
 ## Proyectos base
 
