@@ -1,0 +1,72 @@
+{
+  "description": "Conteos esperados para regresión del parser/scorer. total_min/max toleran pequeñas variaciones de criterios.",
+  "samples": {
+    "young": {
+      "path": "data/cvar_ejemplos/CV_YOUNG, STEFANIA.pdf",
+      "required": true,
+      "category": "V",
+      "total_min": 220,
+      "total_max": 235,
+      "cursos": 4,
+      "articulos": 0,
+      "libros": 0,
+      "capitulos": 0,
+      "trabajos_evento": 0,
+      "premios": 0,
+      "eventos": 5,
+      "investigador_proyecto": 2,
+      "gestion": 1
+    },
+    "garcia": {
+      "path": "../CVar/CV_Garci_a.pdf",
+      "path_alt": "/Users/claudiolarrea/Documents/CVar/CV_Garci_a.pdf",
+      "required": false,
+      "category": "I",
+      "total_min": 2025,
+      "total_max": 2045,
+      "cursos": 1,
+      "articulos": 5,
+      "libros": 11,
+      "capitulos": 4,
+      "trabajos_evento": 1,
+      "premios": 0,
+      "eventos": 9,
+      "investigador_proyecto": 3,
+      "gestion": 9
+    },
+    "gil": {
+      "path": "../CVar/CV_GIL_Diego Martin_2025.pdf",
+      "path_alt": "/Users/claudiolarrea/Documents/CVar/CV_GIL_Diego Martin_2025.pdf",
+      "required": false,
+      "category": "IV",
+      "total_min": 395,
+      "total_max": 415,
+      "cursos": 7,
+      "articulos": 0,
+      "libros": 0,
+      "capitulos": 1,
+      "trabajos_evento": 0,
+      "premios": 0,
+      "eventos": 6,
+      "investigador_proyecto": 1,
+      "gestion": 4
+    },
+    "larrea_2026": {
+      "path": "../../Library/CloudStorage/OneDrive-Personal/01 Claudio/02 CV/2026/CVar Claudio Larrea 2026.pdf",
+      "path_alt": "/Users/claudiolarrea/Library/CloudStorage/OneDrive-Personal/01 Claudio/02 CV/2026/CVar Claudio Larrea 2026.pdf",
+      "required": false,
+      "category": "I",
+      "total_min": 2700,
+      "total_max": 2735,
+      "cursos": 28,
+      "articulos": 24,
+      "libros": 31,
+      "capitulos": 1,
+      "trabajos_evento": 31,
+      "premios": 4,
+      "eventos": 69,
+      "investigador_proyecto": 3,
+      "gestion": 13
+    }
+  }
+}

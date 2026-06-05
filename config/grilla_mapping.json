@@ -1,0 +1,77 @@
+{
+  "note": "Mapeo entre grillas UCCuyo (escala propia) y secciones Anexo VII del categorizador automático.",
+  "grilla_sections": [
+    {
+      "grilla_key": "formacion_academica",
+      "grilla_labels": ["formación académica", "formacion academica"],
+      "anexo_sections": ["Formación académica y complementaria"]
+    },
+    {
+      "grilla_key": "investigacion_cyt",
+      "grilla_labels": ["investigación científica y tecnológica", "investigacion cientifica"],
+      "anexo_sections": ["Financiamiento CyT y Proyectos"]
+    },
+    {
+      "grilla_key": "produccion_academica",
+      "grilla_labels": ["producción académica", "produccion academica"],
+      "anexo_sections": ["Producción científica"]
+    },
+    {
+      "grilla_key": "actividad_cientifica",
+      "grilla_labels": ["actividad científica", "actividad cientifica"],
+      "anexo_sections": [
+        "Participación en eventos CyT y actividades profesionales",
+        "Otros antecedentes CyT"
+      ]
+    },
+    {
+      "grilla_key": "formacion_rrhh",
+      "grilla_labels": ["formación de recursos humanos", "formacion de recursos humanos"],
+      "anexo_sections": ["Formación de recursos humanos"]
+    },
+    {
+      "grilla_key": "gestion_universitaria",
+      "grilla_labels": ["gestión universitaria", "gestion universitaria"],
+      "anexo_sections": ["Otros antecedentes CyT", "Actividades de evaluación y gestión editorial"]
+    }
+  ],
+  "annotation_rules": [
+    {
+      "id": "cursos",
+      "pattern": "(?i)(\\d+)\\s+cursos?\\b",
+      "anexo_item_keywords": ["curso", "diplomatura"],
+      "anexo_section_keywords": ["formación académica"]
+    },
+    {
+      "id": "proyecto_auxiliar",
+      "pattern": "(?i)auxiliar\\s+(\\d+)\\s+proyecto(?:\\s+finalizado)?",
+      "anexo_item_keywords": ["participación en proyecto", "investigador"],
+      "anexo_section_keywords": ["financiamiento"]
+    },
+    {
+      "id": "evento_expositora",
+      "pattern": "(?i)(?:expositora?\\s+(\\d+)|(\\d+)\\s+expositora?)",
+      "anexo_item_keywords": ["eventos cyt"],
+      "anexo_section_keywords": ["participación en eventos"]
+    },
+    {
+      "id": "evento_asistente",
+      "pattern": "(?i)(?:asistente\\s+(\\d+)|(\\d+)\\s+asistente)(?!\\s+invest)",
+      "anexo_item_keywords": ["eventos cyt"],
+      "anexo_section_keywords": ["participación en eventos"]
+    },
+    {
+      "id": "evento_organizadora",
+      "pattern": "(?i)(?:organizadora?\\s+(\\d+)|(\\d+)\\s+organizadora?)",
+      "anexo_item_keywords": ["eventos cyt"],
+      "anexo_section_keywords": ["participación en eventos"]
+    },
+    {
+      "id": "gestion_asistente",
+      "pattern": "(?i)asistente\\s+(?:investigaci[oó]n|ejecutiv[a]?)",
+      "presence_count": 1,
+      "anexo_item_keywords": ["gestión universitaria"],
+      "anexo_section_keywords": ["otros antecedentes"]
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "note": "Equivalencia nominal y escalas entre Anexo VII (automático) y grilla UCCuyo (Consejo). Los umbrales Anexo VII son normativos; la grilla UCCuyo usa otra escala y la categoría la fija el Consejo.",
+  "anexo_vii": {
+    "scale_id": "anexo_vii",
+    "scale_label": "Anexo VII — Valorador de Currículum Docente",
+    "max_points": 3550,
+    "source": "config/criteria.json → categorias.min_points"
+  },
+  "grilla_uccuyo": {
+    "scale_id": "grilla_uccuyo",
+    "scale_label": "Grilla manual UCCuyo (Consejo de Investigación)",
+    "max_points_orientativo": 600,
+    "nota_escala": "Totales típicos entre 100 y 550 según bloques evaluados (formación, docencia, actividad, gestión). No convierte 1:1 con Anexo VII."
+  },
+  "categorias": [
+    {
+      "code": "I",
+      "label": "Investigador Superior",
+      "anexo_min_points": 1800,
+      "grilla_umbral_orientativo": null,
+      "descripcion_anexo": "Trayectoria sobresaliente, liderazgo consolidado y producción de alto impacto."
+    },
+    {
+      "code": "II",
+      "label": "Investigador Principal",
+      "anexo_min_points": 1200,
+      "grilla_umbral_orientativo": null,
+      "descripcion_anexo": "Producción muy sólida, proyectos y formación de RRHH significativa."
+    },
+    {
+      "code": "III",
+      "label": "Investigador Independiente",
+      "anexo_min_points": 700,
+      "grilla_umbral_orientativo": null,
+      "descripcion_anexo": "Investigador en consolidación con producción continua."
+    },
+    {
+      "code": "IV",
+      "label": "Investigador Adjunto",
+      "anexo_min_points": 350,
+      "grilla_umbral_orientativo": 300,
+      "descripcion_anexo": "Etapa inicial con producción moderada y participación en proyectos."
+    },
+    {
+      "code": "V",
+      "label": "Investigador Asistente",
+      "anexo_min_points": 1,
+      "grilla_umbral_orientativo": 80,
+      "descripcion_anexo": "Primeros antecedentes o participación incipiente."
+    },
+    {
+      "code": "VI",
+      "label": "Becario de Iniciación",
+      "anexo_min_points": 0,
+      "grilla_umbral_orientativo": 0,
+      "descripcion_anexo": "Sin antecedentes registrados."
+    }
+  ],
+  "casos_referencia": [
+    {
+      "id": "young",
+      "docente": "Young, Estefanía",
+      "grilla_total": 110,
+      "grilla_categoria": "V",
+      "anexo_total": 228,
+      "anexo_categoria": "V",
+      "coincide": true,
+      "nota": "Perfil investigador novel; ambas escalas coinciden en Asistente."
+    },
+    {
+      "id": "cali",
+      "docente": "Cali Velasco, Gretel",
+      "grilla_total": 496,
+      "grilla_categoria": "IV",
+      "anexo_total": 285,
+      "anexo_categoria": "V",
+      "coincide": false,
+      "nota": "La grilla UCCuyo pondera docencia (136) y gestión (150). El Anexo VII con 285 pts queda en V (<350), pero el Consejo asignó IV por el perfil integral en la grilla."
+    }
+  ],
+  "discrepancia_hints": [
+    {
+      "when": "anexo_menor_que_grilla",
+      "texto": "El total Anexo VII suele ser menor que la grilla UCCuyo porque miden bloques distintos y con reglas distintas."
+    },
+    {
+      "when": "auto_V_grilla_IV",
+      "texto": "Frecuente en perfiles con mucha docencia/gestión: la grilla UCCuyo puede ubicar en Adjunto (IV) aunque el Anexo VII automático dé Asistente (V)."
+    },
+    {
+      "when": "misma_categoria",
+      "texto": "Coincidencia nominal: misma categoría romana en ambos sistemas."
+    }
+  ]
+}

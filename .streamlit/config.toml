@@ -1,0 +1,13 @@
+[theme]
+primaryColor = "#00664d"
+backgroundColor = "#E6E6E6"
+secondaryBackgroundColor = "#262730"
+textColor = "#262730"
+font = "sans serif"
+
+[ui]
+hideSidebarNav = true
+hideTopBar = true
+
+[client]
+toolbarMode = "minimal"
