@@ -107,6 +107,11 @@ def _dedupe_entries(entries: List[Dict[str, Any]], key_fields: Tuple[str, ...]) 
 # Formación de recursos humanos
 # ---------------------------------------------------------------------------
 
+def _extract_tesista_name(entry: str) -> str:
+    m = re.search(r"Tesista\s*:\s*(.+)", entry, re.I)
+    return (m.group(1) if m else "").strip()[:120]
+
+
 def _classify_rrhh(entry: str) -> str:
     head = entry[:400]
     h = head.lower()
@@ -119,8 +124,6 @@ def _classify_rrhh(entry: str) -> str:
         return "direccion_tesis_doctorado" if _RE_TESISTA.search(entry) else "otro"
     if re.search(r"co-?direcci[oó]n de tesis de doctorado", h):
         return "codireccion_tesis_doctorado" if _RE_TESISTA.search(entry) else "otro"
-    if re.search(r"direcci[oó]n de (?:tesina|trabajo final de grado|trabajo final)\b", h) and not re.search(r"co-?direcci", h):
-        return "direccion_tesina_grado" if _RE_TESISTA.search(entry) else "otro"
     if re.search(r"direcci[oó]n de trabajo final de especializaci[oó]n", h) and not re.search(r"co-?direcci", h):
         return "direccion_especializacion" if _RE_TESISTA.search(entry) else "otro"
     if re.search(r"co-?direcci[oó]n de trabajo final de especializaci[oó]n", h):
@@ -129,6 +132,10 @@ def _classify_rrhh(entry: str) -> str:
         return "direccion_maestria" if _RE_TESISTA.search(entry) else "otro"
     if re.search(r"co-?direcci[oó]n de trabajo final,\s*proyecto,\s*obra o tesis de maestr", h):
         return "codireccion_maestria" if _RE_TESISTA.search(entry) else "otro"
+    if re.search(r"co-?direcci[oó]n de (?:tesina|trabajo final de grado|trabajo final)\b", h):
+        return "codireccion_tesina_grado" if _RE_TESISTA.search(entry) else "otro"
+    if re.search(r"direcci[oó]n de (?:tesina|trabajo final de grado|trabajo final)\b", h) and not re.search(r"co-?direcci", h):
+        return "direccion_tesina_grado" if _RE_TESISTA.search(entry) else "otro"
     if re.search(r"direcci[oó]n de investigador\s*:\s*otra", h) and not re.search(r"co-?direcci", h):
         return "direccion_investigador_otra" if _RE_INVESTIGADOR.search(entry) else "otro"
     if re.search(r"co-?direcci[oó]n de investigador\s*:\s*otra", h):
@@ -146,9 +153,16 @@ def parse_formacion_rrhh(block: str) -> Dict[str, Any]:
         tipo = _classify_rrhh(entry)
         if tipo == "otro":
             continue
-        raw_entries.append({"tipo": tipo, "texto": _snippet(entry, 400), "resumen": entry.split("\n", 1)[0][:200]})
+        raw_entries.append(
+            {
+                "tipo": tipo,
+                "texto": _snippet(entry, 400),
+                "resumen": entry.split("\n", 1)[0][:200],
+                "tesista": _extract_tesista_name(entry),
+            }
+        )
 
-    items, counts, evidence = _dedupe_entries(raw_entries, ("resumen",))
+    items, counts, evidence = _dedupe_entries(raw_entries, ("resumen", "tesista"))
     return {"entradas": items, "counts": counts, "evidence": evidence}
 
 
@@ -188,10 +202,10 @@ def _classify_financiamiento(entry: str) -> str:
     h = entry.lower()
     if re.search(r"director(?:a)? en el proyecto de extensi[oó]n", h):
         return "direccion_extension"
-    if re.search(r"director(?:a)? en el proyecto de i\+d", h):
-        return "direccion_proyecto"
     if re.search(r"co-?director(?:a)? en el proyecto de i\+d", h):
         return "codireccion_proyecto"
+    if re.search(r"director(?:a)? en el proyecto de i\+d", h):
+        return "direccion_proyecto"
     if re.search(
         r"(?:alumn[oa]|estudiante)\s+becari[oa]\s+en el proyecto de i\+d|"
         r"estudiante en el proyecto de i\+d",
@@ -250,12 +264,14 @@ def _classify_evaluacion(entry: str) -> str:
         return "evaluacion_programas"
     if re.search(r"proyectos institucionales|evaluaci[oó]n institucional", h):
         return "evaluacion_institucional"
-    if re.search(r"revisor|reviewer|evaluador de art[ií]culos|revista", h) and "jurado" not in h:
+    if re.search(r"integrante del comit[eé]|miembro del comit[eé]", h) and not re.search(r"organizada por", h):
+        return "gestion_comite"
+    if re.search(r"comisi[oó]n|consejo|cai|comit[eé]", h) and not re.search(r"organizada por", h):
+        return "gestion_comite"
+    if re.search(r"revisor|reviewer|evaluador de art[ií]culos", h) and "jurado" not in h:
         return "revisor_revista"
     if re.search(r"p[oó]ster|simposio|pasant[ií]a|plan de doctorado", h):
         return "evaluacion_academica_puntual"
-    if re.search(r"comisi[oó]n|consejo|cai|comit[eé]", h) and not re.search(r"organizada por", h):
-        return "gestion_comite"
     if re.search(r"evaluaci[oó]n de investigadores|evaluador/a", h):
         return "evaluacion_programas"
     return "otro"

@@ -901,7 +901,8 @@ def _count_antecedentes_cyt(full_text: str) -> Tuple[Dict[str, int], Dict[str, s
             r"\b(?:Coordinador(?:a)?|Director(?:a)?|Secretari[oa]|Decan[oa]|Vicerrector(?:a)?|"
             r"Rector(?:a)?|Consejer[oa]|Jefe\s+de|Subprograma|Asistente\s+Ejecutiv[a]?|"
             r"Asistente\s+de\s+Investigaci[oó]n|"
-            r"Miembro\s+(?:del\s+)?(?:comit[eé]|consejo)\s+de\s+investigaci[oó]n)\b",
+            r"Miembro\s+(?:del\s+)?(?:comit[eé]|consejo)\s+de\s+investigaci[oó]n|"
+            r"Integrante\s+del\s+Comit[eé])\b",
             snippet,
             re.I,
         ):
@@ -1285,6 +1286,7 @@ def _score_with_counts(
                     ("co-dirección de investigador", "codireccion_investigador_otra"),
                     ("dirección de investigador", "direccion_investigador_otra"),
                     ("co-dirección de personal de apoyo", "codireccion_apoyo_id"),
+                    ("co-dirección de tesina", "codireccion_tesina_grado"),
                     ("dirección de tesina", "direccion_tesina_grado"),
                     ("dirección de pasantía", "direccion_pasantia"),
                 ]

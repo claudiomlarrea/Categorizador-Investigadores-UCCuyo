@@ -246,7 +246,8 @@ def _parse_antecedentes_items(block: str) -> List[Dict[str, Any]]:
             r"\b(?:Coordinador(?:a)?|Director(?:a)?|Secretari[oa]|Decan[oa]|Vicerrector(?:a)?|"
             r"Rector(?:a)?|Consejer[oa]|Jefe\s+de|Subprograma|Asistente\s+Ejecutiv[a]?|"
             r"Asistente\s+de\s+Investigaci[oó]n|"
-            r"Miembro\s+(?:del\s+)?(?:comit[eé]|consejo)\s+de\s+investigaci[oó]n)\b",
+            r"Miembro\s+(?:del\s+)?(?:comit[eé]|consejo)\s+de\s+investigaci[oó]n|"
+            r"Integrante\s+del\s+Comit[eé])\b",
             snippet,
             re.I,
         ):
@@ -323,7 +324,13 @@ def _build_counts(text: str, section_text: Dict[str, str], parsed_items: Dict[st
     else:
         cursos_con, cursos_sin, _ = sc._count_cursos(text)
     idiomas, _ = sc._count_idiomas(text)
-    antecedentes, _ = sc._count_antecedentes_cyt(text)
+    antecedentes, antecedentes_ev = sc._count_antecedentes_cyt(text)
+    ant_items = parsed_items.get("antecedentes_cyt", {}).get("entradas", [])
+    if ant_items:
+        antecedentes = {
+            "gestion": sum(1 for e in ant_items if e.get("rol") == "gestion"),
+            "profesional": sum(1 for e in ant_items if e.get("rol") == "profesional"),
+        }
     section_agg = aggregate_section_counts(parsed_items)
     pub_counts = parsed_items.get("publicaciones", {}).get("counts", {})
 
