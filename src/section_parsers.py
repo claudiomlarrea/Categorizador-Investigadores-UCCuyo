@@ -29,6 +29,9 @@ _RE_BECARIO = re.compile(r"becari[oa](?:/a)?\s*:", re.I)
 _RE_TESISTA = re.compile(r"tesista\s*:", re.I)
 _RE_INVESTIGADOR = re.compile(r"investigador/a\s*:", re.I)
 _RE_JEFE = re.compile(r"jefe\s*:", re.I)
+_RE_APOYO_ROLE = re.compile(
+    r"(?i)\b(?:jefe|director de proyecto|codirector(?:a)? de proyecto)\s*:",
+)
 _RE_PASANTE = re.compile(r"pasante\s*:", re.I)
 
 _RE_SUBSECTION = re.compile(
@@ -112,6 +115,24 @@ def _extract_tesista_name(entry: str) -> str:
     return (m.group(1) if m else "").strip()[:120]
 
 
+def _extract_investigador_name(entry: str) -> str:
+    m = re.search(r"Investigador/a\s*:\s*(.+)", entry, re.I)
+    return (m.group(1) if m else "").strip()[:120]
+
+
+def _extract_becario_name(entry: str) -> str:
+    m = re.search(r"Becari[oa](?:/a)?\s*:\s*(.+)", entry, re.I)
+    return (m.group(1) if m else "").strip()[:120]
+
+
+def _extract_apoyo_role_name(entry: str) -> str:
+    m = re.search(
+        r"(?i)(?:jefe|director de proyecto|codirector(?:a)? de proyecto)\s*:\s*(.+)",
+        entry,
+    )
+    return (m.group(1) if m else "").strip()[:120]
+
+
 def _classify_rrhh(entry: str) -> str:
     head = entry[:400]
     h = head.lower()
@@ -128,10 +149,12 @@ def _classify_rrhh(entry: str) -> str:
         return "direccion_especializacion" if _RE_TESISTA.search(entry) else "otro"
     if re.search(r"co-?direcci[oó]n de trabajo final de especializaci[oó]n", h):
         return "codireccion_especializacion" if _RE_TESISTA.search(entry) else "otro"
-    if re.search(r"direcci[oó]n de trabajo final,\s*proyecto,\s*obra o tesis de maestr", h):
-        return "direccion_maestria" if _RE_TESISTA.search(entry) else "otro"
     if re.search(r"co-?direcci[oó]n de trabajo final,\s*proyecto,\s*obra o tesis de maestr", h):
         return "codireccion_maestria" if _RE_TESISTA.search(entry) else "otro"
+    if re.search(r"direcci[oó]n de trabajo final,\s*proyecto,\s*obra o tesis de maestr", h) and not re.search(
+        r"co-?direcci", h
+    ):
+        return "direccion_maestria" if _RE_TESISTA.search(entry) else "otro"
     if re.search(r"co-?direcci[oó]n de (?:tesina|trabajo final de grado|trabajo final)\b", h):
         return "codireccion_tesina_grado" if _RE_TESISTA.search(entry) else "otro"
     if re.search(r"direcci[oó]n de (?:tesina|trabajo final de grado|trabajo final)\b", h) and not re.search(r"co-?direcci", h):
@@ -141,7 +164,9 @@ def _classify_rrhh(entry: str) -> str:
     if re.search(r"co-?direcci[oó]n de investigador\s*:\s*otra", h):
         return "codireccion_investigador_otra" if _RE_INVESTIGADOR.search(entry) else "otro"
     if re.search(r"co-?direcci[oó]n de personal de apoyo a la i\+d", h):
-        return "codireccion_apoyo_id" if _RE_JEFE.search(entry) else "otro"
+        return "codireccion_apoyo_id" if _RE_APOYO_ROLE.search(entry) else "otro"
+    if re.search(r"direcci[oó]n de personal de apoyo a la i\+d", h) and not re.search(r"co-?direcci", h):
+        return "direccion_apoyo_id" if _RE_APOYO_ROLE.search(entry) else "otro"
     if re.search(r"direcci[oó]n de (?:formaci[oó]n acad[eé]mica|tareas de investigaci[oó]n).+pasante", h):
         return "direccion_pasantia" if _RE_PASANTE.search(entry) else "otro"
     return "otro"
@@ -159,10 +184,15 @@ def parse_formacion_rrhh(block: str) -> Dict[str, Any]:
                 "texto": _snippet(entry, 400),
                 "resumen": entry.split("\n", 1)[0][:200],
                 "tesista": _extract_tesista_name(entry),
+                "investigador": _extract_investigador_name(entry),
+                "becario": _extract_becario_name(entry),
+                "apoyo": _extract_apoyo_role_name(entry),
             }
         )
 
-    items, counts, evidence = _dedupe_entries(raw_entries, ("resumen", "tesista"))
+    items, counts, evidence = _dedupe_entries(
+        raw_entries, ("resumen", "tesista", "investigador", "becario", "apoyo")
+    )
     return {"entradas": items, "counts": counts, "evidence": evidence}
 
 

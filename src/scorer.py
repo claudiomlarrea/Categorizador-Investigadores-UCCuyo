@@ -1285,6 +1285,7 @@ def _score_with_counts(
                     ("dirección de maestría", "direccion_maestria"),
                     ("co-dirección de investigador", "codireccion_investigador_otra"),
                     ("dirección de investigador", "direccion_investigador_otra"),
+                    ("dirección de personal de apoyo", "direccion_apoyo_id"),
                     ("co-dirección de personal de apoyo", "codireccion_apoyo_id"),
                     ("co-dirección de tesina", "codireccion_tesina_grado"),
                     ("dirección de tesina", "direccion_tesina_grado"),
@@ -1292,8 +1293,17 @@ def _score_with_counts(
                 ]
                 for label, key in rrhh_map:
                     if label in il:
-                        count = int(rrhh_counts.get(key, 0))
-                        evidence = rrhh_evidence.get(key, "")
+                        if key == "direccion_tesina_grado":
+                            count = int(rrhh_counts.get("direccion_tesina_grado", 0)) + int(
+                                rrhh_counts.get("codireccion_tesina_grado", 0)
+                            )
+                            evidence = (
+                                rrhh_evidence.get("direccion_tesina_grado", "")
+                                or rrhh_evidence.get("codireccion_tesina_grado", "")
+                            )
+                        else:
+                            count = int(rrhh_counts.get(key, 0))
+                            evidence = rrhh_evidence.get(key, "")
                         rrhh_struct_locked = True
                         break
 

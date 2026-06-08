@@ -51,6 +51,23 @@
       "investigador_proyecto": 1,
       "gestion": 4
     },
+    "pizarro": {
+      "path": "../../Downloads/este CV_ORG_1_CV-Laura Pizarro.pdf",
+      "path_alt": "/Users/claudiolarrea/Downloads/este CV_ORG_1_CV-Laura Pizarro.pdf",
+      "required": false,
+      "category": "I",
+      "total_min": 2145,
+      "total_max": 2175,
+      "cursos": 19,
+      "articulos": 6,
+      "libros": 0,
+      "capitulos": 2,
+      "trabajos_evento": 9,
+      "premios": 0,
+      "eventos": 41,
+      "investigador_proyecto": 4,
+      "gestion": 15
+    },
     "larrea_2026": {
       "path": "../../Library/CloudStorage/OneDrive-Personal/01 Claudio/02 CV/2026/CVar Claudio Larrea 2026.pdf",
       "path_alt": "/Users/claudiolarrea/Library/CloudStorage/OneDrive-Personal/01 Claudio/02 CV/2026/CVar Claudio Larrea 2026.pdf",

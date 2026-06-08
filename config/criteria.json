@@ -164,8 +164,13 @@
           "unit_points": 10,
           "max_points": 60
       },
-        "Co-dirección de Personal de apoyo a la I+D (ancla JEFE)": {
-          "pattern": "(?is)\\bCo-?direcci[oó]n\\s+de\\s+Personal\\s+de\\s+apoyo\\s+a\\s+la\\s+I\\+D\\b[\\s\\S]{0,500}?\\bJEFE\\s*:\\s*",
+        "Dirección de Personal de apoyo a la I+D (ancla JEFE/director proyecto)": {
+          "pattern": "(?is)\\bDirecci[oó]n\\s+de\\s+Personal\\s+de\\s+apoyo\\s+a\\s+la\\s+I\\+D\\b[\\s\\S]{0,500}?\\b(?:JEFE|director de proyecto)\\s*:\\s*",
+          "unit_points": 15,
+          "max_points": 60
+        },
+        "Co-dirección de Personal de apoyo a la I+D (ancla JEFE/director proyecto)": {
+          "pattern": "(?is)\\bCo-?direcci[oó]n\\s+de\\s+Personal\\s+de\\s+apoyo\\s+a\\s+la\\s+I\\+D\\b[\\s\\S]{0,500}?\\b(?:JEFE|codirector(?:a)? de proyecto|director de proyecto)\\s*:\\s*",
           "unit_points": 10,
           "max_points": 40
       },
