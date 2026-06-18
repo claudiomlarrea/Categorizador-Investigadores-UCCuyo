@@ -213,6 +213,7 @@ _RE_ENTRY_START = re.compile(
     r"Abogad[oa]s?|"
     r"Licenciatura|Licenciad[oa](?:\s+en)?|"
     r"Ingenier[oa]s?|Contador(?:a)?s?|Arquitect[oa]s?|"
+    r"Enfermer[ií]a|Enfermer[oa]s?|"
     r"T[eé]cnica\s+Universitaria|Tecnicatura"
     r")\b",
     re.IGNORECASE
@@ -229,6 +230,7 @@ _TITLE_ENTRY_ANCHORS = (
     r"Licenciatura|Licenciad[oa](?:\s+en)?|"
     r"Ingenier[oa]s?|Contador(?:a)?s?|Arquitect[oa]s?|"
     r"Farmac[eé]utic[oa]s?|Bioqu[ií]mic[oa]s?|M[eé]dic[oa]s?|"
+    r"Enfermer[ií]a|Enfermer[oa]s?|"
     r"T[eé]cnica\s+Universitaria|Tecnicatura"
 )
 
@@ -406,10 +408,10 @@ def _classify_structural(entry: str) -> str:
     if re.search(r"\bprofesorado\b", head):
         return "profesorado"
 
-    # 8️⃣ Títulos profesionales de grado (Abogado, Licenciado, Farmacéutico, etc.)
+    # 8️⃣ Títulos profesionales de grado (Abogado, Licenciado, Enfermería, etc.)
     if re.search(
         r"^(?:abogad[oa]s?|licenciad[oa]s?|ingenier[oa]s?|contador(?:a)?s?|arquitect[oa]s?|"
-        r"bioqu[ií]mic[oa]s?|farmac[eé]utic[oa]s?|m[eé]dic[oa]s?)\b",
+        r"bioqu[ií]mic[oa]s?|farmac[eé]utic[oa]s?|m[eé]dic[oa]s?|enfermer[ií]a|enfermer[oa]s?)\b",
         head,
     ):
         return "grado"
@@ -1208,7 +1210,9 @@ def _score_with_counts(
                     count = form_counts["maestria"]
                     evidence = form_evidence["maestria"]
                     forma_struct_locked = True
-                elif "especializ" in il or "especialidad" in il or "especialista" in il:
+                elif re.match(r"(?i)^especializ", item_name.strip()) or re.match(
+                    r"(?i)^especialidad", item_name.strip()
+                ):
                     count = form_counts["especializacion"]
                     evidence = form_evidence["especializacion"]
                     forma_struct_locked = True

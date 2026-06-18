@@ -91,8 +91,8 @@
       "path_alt": "/Users/claudiolarrea/Documents/CVar/CV_GIL_Diego Martin_2025.pdf",
       "required": false,
       "category": "IV",
-      "total_min": 395,
-      "total_max": 415,
+      "total_min": 375,
+      "total_max": 405,
       "cursos": 7,
       "articulos": 0,
       "libros": 0,
@@ -108,8 +108,8 @@
       "path_alt": "/Users/claudiolarrea/Documents/CVar/CALI VELASCO, GRETEL.pdf",
       "required": false,
       "category": "V",
-      "total_min": 283,
-      "total_max": 287,
+      "total_min": 265,
+      "total_max": 267,
       "cursos": 5,
       "articulos": 0,
       "libros": 0,
@@ -170,6 +170,23 @@
       "eventos": 69,
       "investigador_proyecto": 3,
       "gestion": 13
+    },
+    "sandra_garcia": {
+      "path": "../../Downloads/CV_ORG_1_CV-ARGENTINO-COMPLETO_27180112508 Sandra Garcia.pdf",
+      "path_alt": "/Users/claudiolarrea/Downloads/CV_ORG_1_CV-ARGENTINO-COMPLETO_27180112508 Sandra Garcia.pdf",
+      "required": false,
+      "category": "V",
+      "total_min": 177,
+      "total_max": 177,
+      "cursos": 0,
+      "articulos": 0,
+      "libros": 1,
+      "capitulos": 0,
+      "trabajos_evento": 1,
+      "premios": 0,
+      "eventos": 1,
+      "investigador_proyecto": 0,
+      "gestion": 0
     }
   }
 }
