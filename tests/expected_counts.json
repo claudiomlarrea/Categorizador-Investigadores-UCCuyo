@@ -187,6 +187,23 @@
       "eventos": 1,
       "investigador_proyecto": 0,
       "gestion": 0
+    },
+    "melina_maluf": {
+      "path": "../../Downloads/melina maluf CV_ORG_1_CV-ARGENTINO-COMPLETO_27252811430 (1).pdf",
+      "path_alt": "/Users/claudiolarrea/Downloads/melina maluf CV_ORG_1_CV-ARGENTINO-COMPLETO_27252811430 (1).pdf",
+      "required": false,
+      "category": "III",
+      "total_min": 1083,
+      "total_max": 1083,
+      "cursos": 80,
+      "articulos": 8,
+      "libros": 0,
+      "capitulos": 2,
+      "trabajos_evento": 0,
+      "premios": 0,
+      "eventos": 0,
+      "investigador_proyecto": 0,
+      "gestion": 4
     }
   }
 }

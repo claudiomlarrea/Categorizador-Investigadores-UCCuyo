@@ -209,8 +209,8 @@ _RE_ENTRY_START = re.compile(
     r"Doctorado|Doctor\s+en|Doctor\s+de\s+la\s+Universidad|Doctor(?:a)?\b|"
     r"Maestr[ií]a|Mag[ií]ster|Magister|"
     r"Especializaci[oó]n|Especialidad|Especialista|"
-    r"Profesorado|Profesor\s+Superior|Profesor\s+Universitario|Profesor\s+en|"
-    r"Abogad[oa]s?|"
+    r"Profesorado|Profesor\s+Superior|Profesor\s+Universitario|Profesor(?:a)?\s+en|"
+    r"Abogad[oa]s?|Notari[ao]s?|"
     r"Licenciatura|Licenciad[oa](?:\s+en)?|"
     r"Ingenier[oa]s?|Contador(?:a)?s?|Arquitect[oa]s?|"
     r"Enfermer[ií]a|Enfermer[oa]s?|"
@@ -225,8 +225,8 @@ _TITLE_ENTRY_ANCHORS = (
     r"Doctorado|Doctor\s+en|Doctor\s+de\s+la\s+Universidad|Doctor(?:a)?\b|"
     r"Maestr[ií]a|Mag[ií]ster|Magister|"
     r"Especializaci[oó]n|Especialidad|Especialista|"
-    r"Profesorado|Profesor\s+Superior|Profesor\s+Universitario|Profesor\s+en|"
-    r"Abogad[oa]s?|"
+    r"Profesorado|Profesor\s+Superior|Profesor\s+Universitario|Profesor(?:a)?\s+en|"
+    r"Abogad[oa]s?|Notari[ao]s?|"
     r"Licenciatura|Licenciad[oa](?:\s+en)?|"
     r"Ingenier[oa]s?|Contador(?:a)?s?|Arquitect[oa]s?|"
     r"Farmac[eé]utic[oa]s?|Bioqu[ií]mic[oa]s?|M[eé]dic[oa]s?|"
@@ -384,8 +384,8 @@ def _classify_structural(entry: str) -> str:
     if re.search(r"\bdiplomatur|\bdiplomad|\bdiploma\b", head):
         return "diplomatura"
 
-    # 2️⃣ Doctorado
-    if re.search(r"\bdoctorad|\bdoctor\b", head):
+    # 2️⃣ Doctorado (incluye "Doctora en …", no solo "Doctor")
+    if re.search(r"\bdoctorad[oa]?\b|\bdoctor(?:a)?\b", head):
         return "doctorado"
 
     # 3️⃣ Maestría
@@ -410,7 +410,7 @@ def _classify_structural(entry: str) -> str:
 
     # 8️⃣ Títulos profesionales de grado (Abogado, Licenciado, Enfermería, etc.)
     if re.search(
-        r"^(?:abogad[oa]s?|licenciad[oa]s?|ingenier[oa]s?|contador(?:a)?s?|arquitect[oa]s?|"
+        r"^(?:abogad[oa]s?|notari[ao]s?|licenciad[oa]s?|ingenier[oa]s?|contador(?:a)?s?|arquitect[oa]s?|"
         r"bioqu[ií]mic[oa]s?|farmac[eé]utic[oa]s?|m[eé]dic[oa]s?|enfermer[ií]a|enfermer[oa]s?)\b",
         head,
     ):
