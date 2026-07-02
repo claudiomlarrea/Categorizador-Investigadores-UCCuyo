@@ -5,7 +5,7 @@ import pandas as pd
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-from section_caps import allocate_section_item_caps
+from section_caps import allocate_section_item_caps, section_effective_max
 
 CATEGORY_LABELS = {
     "I": "Investigador Superior",

@@ -29,6 +29,7 @@ from report import (  # noqa: E402
     results_to_dataframe,
     section_totals_dataframe,
 )
+from section_caps import section_effective_max  # noqa: E402
 from category_equivalence import (  # noqa: E402
     build_equivalence_table,
     build_reference_cases_table,
@@ -391,6 +392,7 @@ def main() -> None:
         item_topes_cfg = sum(
             float(it.get("max_points", 0)) for it in cfg.get("items", {}).values()
         )
+        effective_max = section_effective_max(cfg)
         section_overflow = item_topes_cfg > sec_max + 0.5 and sec_sub >= sec_max - 0.5
         if section_overflow:
             st.caption(
@@ -402,13 +404,12 @@ def main() -> None:
                 f"Cupo global de la sección: **{int(sec_max)} pts**. "
                 "Se aplican los topes por ítem del Anexo VII; el cupo global solo limita si el subtotal lo supera."
             )
-        elif not df_sec.empty and abs(float(df_sec["Tope en sección"].sum()) - sec_max) > 0.6:
-            tope_col_sum = float(df_sec["Tope en sección"].sum())
+        elif item_topes_cfg < sec_max - 0.5:
             st.caption(
-                f"Los topes en sección mostrados suman {tope_col_sum:.0f} pts "
-                f"(máximo alcanzable con los ítems configurados)."
+                f"Tope Anexo VII: **{int(sec_max)} pts**. "
+                f"Máximo alcanzable con los ítems del valorador: **{effective_max} pts**."
             )
-        st.info(f"Subtotal: **{int(round(sec_sub))}** / máx **{int(sec_max)}**")
+        st.info(f"Subtotal: **{int(round(sec_sub))}** / máx **{effective_max}**")
 
     st.markdown("---")
     st.subheader("Resumen por sección")

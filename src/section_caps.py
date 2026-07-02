@@ -28,9 +28,12 @@ def allocate_section_item_caps(
     return caps
 
 
-def section_uses_shared_pool(section_cfg: Dict[str, Any]) -> bool:
-    sec_max = float(section_cfg.get("max_points", 0))
+def section_effective_max(section_cfg: Dict[str, Any]) -> int:
+    """Máximo puntuable: tope de sección o suma de topes por ítem si es menor."""
+    sec_max = int(round(float(section_cfg.get("max_points", 0))))
     item_sum = sum(
         float(it.get("max_points", 0)) for it in section_cfg.get("items", {}).values()
     )
-    return item_sum > sec_max + 1e-9
+    if 0 < item_sum < sec_max:
+        return int(item_sum)
+    return sec_max
