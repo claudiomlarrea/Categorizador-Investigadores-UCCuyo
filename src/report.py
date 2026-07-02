@@ -22,26 +22,28 @@ def category_label(code: str) -> str:
 
 def allocate_section_display_caps(
     section_cfg: Dict[str, Any], item_names: List[str]
-) -> Dict[str, float]:
-    """Reparte el tope de sección entre ítems cuando los topes parciales lo superan."""
-    sec_max = float(section_cfg.get("max_points", 0))
+) -> Dict[str, int]:
+    """Reparte el tope de sección entre ítems (enteros) cuando los topes parciales lo superan."""
+    sec_max = int(round(float(section_cfg.get("max_points", 0))))
     items_cfg = section_cfg.get("items", {})
     weights = {
         name: float(items_cfg.get(name, {}).get("max_points", 0)) for name in item_names
     }
     total = sum(weights.values())
     if total <= sec_max or total <= 0:
-        return weights
+        return {name: int(weights[name]) for name in item_names}
 
-    caps: Dict[str, float] = {}
-    allocated = 0.0
-    for i, name in enumerate(item_names):
-        if i == len(item_names) - 1:
-            caps[name] = round(sec_max - allocated, 1)
-        else:
-            share = round(weights[name] / total * sec_max, 1)
-            caps[name] = share
-            allocated += share
+    raw_shares = {name: weights[name] / total * sec_max for name in item_names}
+    caps = {name: int(raw_shares[name]) for name in item_names}
+    remainder = sec_max - sum(caps.values())
+    if remainder > 0:
+        order = sorted(
+            item_names,
+            key=lambda n: (raw_shares[n] - caps[n], weights[n]),
+            reverse=True,
+        )
+        for i in range(remainder):
+            caps[order[i % len(order)]] += 1
     return caps
 
 
