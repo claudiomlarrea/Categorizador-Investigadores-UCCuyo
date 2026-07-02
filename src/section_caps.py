@@ -37,3 +37,11 @@ def section_effective_max(section_cfg: Dict[str, Any]) -> int:
     if 0 < item_sum < sec_max:
         return int(item_sum)
     return sec_max
+
+
+def section_uses_shared_pool(section_cfg: Dict[str, Any]) -> bool:
+    sec_max = float(section_cfg.get("max_points", 0))
+    item_sum = sum(
+        float(it.get("max_points", 0)) for it in section_cfg.get("items", {}).values()
+    )
+    return item_sum > sec_max + 1e-9

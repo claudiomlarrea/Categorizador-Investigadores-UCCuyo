@@ -5,7 +5,11 @@ import pandas as pd
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-from section_caps import allocate_section_item_caps, section_effective_max
+from section_caps import (
+    allocate_section_item_caps,
+    section_effective_max,
+    section_uses_shared_pool,
+)
 
 CATEGORY_LABELS = {
     "I": "Investigador Superior",
@@ -29,8 +33,18 @@ def allocate_section_display_caps(
 
 
 def results_to_dataframe(item_results, criteria: Optional[Dict[str, Any]] = None) -> pd.DataFrame:
+    display_caps: Dict[tuple, int] = {}
+    if criteria:
+        for sec_name, cfg in criteria.get("sections", {}).items():
+            if not section_uses_shared_pool(cfg):
+                continue
+            names = list(cfg.get("items", {}).keys())
+            for item_name, cap in allocate_section_item_caps(cfg, names).items():
+                display_caps[(sec_name, item_name)] = cap
+
     rows = []
     for r in item_results:
+        tope = display_caps.get((r.section, r.item), int(r.item_max_points))
         rows.append(
             {
                 "Sección": r.section,
@@ -38,7 +52,7 @@ def results_to_dataframe(item_results, criteria: Optional[Dict[str, Any]] = None
                 "Ocurrencias": r.count,
                 "Puntos unitarios": r.unit_points,
                 "Puntaje bruto": r.raw_points,
-                "Tope en sección": int(r.item_max_points),
+                "Tope en sección": tope,
                 "Puntaje (tope aplicado)": int(r.capped_item_points),
                 "Evidencia (1er match)": r.evidence,
             }

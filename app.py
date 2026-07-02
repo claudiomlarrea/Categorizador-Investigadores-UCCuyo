@@ -402,7 +402,9 @@ def main() -> None:
         elif item_topes_cfg > sec_max + 0.5:
             st.caption(
                 f"Cupo global de la sección: **{int(sec_max)} pts**. "
-                "Se aplican los topes por ítem del Anexo VII; el cupo global solo limita si el subtotal lo supera."
+                "La columna «Tope en sección» reparte ese cupo entre ítems (suma "
+                f"**{int(sec_max)}**). Mientras el subtotal no lo supere, el puntaje "
+                "usa los topes individuales del Anexo VII."
             )
         elif item_topes_cfg < sec_max - 0.5:
             st.caption(
