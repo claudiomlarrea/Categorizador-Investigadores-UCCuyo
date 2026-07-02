@@ -1,10 +1,14 @@
 from typing import Any, Dict, List
 
 
+def _floor_to_multiple_of_5(value: float) -> int:
+    return int(value // 5) * 5
+
+
 def allocate_section_item_caps(
     section_cfg: Dict[str, Any], item_names: List[str]
 ) -> Dict[str, int]:
-    """Reparte el tope de sección entre ítems (enteros) cuando los topes parciales lo superan."""
+    """Reparte el tope de sección entre ítems (múltiplos de 5) cuando los topes parciales lo superan."""
     sec_max = int(round(float(section_cfg.get("max_points", 0))))
     items_cfg = section_cfg.get("items", {})
     weights = {
@@ -16,7 +20,7 @@ def allocate_section_item_caps(
         return {name: int(weights[name]) for name in item_names}
 
     raw_shares = {name: weights[name] / total * sec_max for name in scoring_names}
-    caps = {name: int(raw_shares[name]) for name in scoring_names}
+    caps = {name: _floor_to_multiple_of_5(raw_shares[name]) for name in scoring_names}
     remainder = sec_max - sum(caps.values())
     if remainder > 0:
         order = sorted(
@@ -24,8 +28,8 @@ def allocate_section_item_caps(
             key=lambda n: (raw_shares[n] - caps[n], weights[n]),
             reverse=True,
         )
-        for i in range(remainder):
-            caps[order[i % len(order)]] += 1
+        for i in range(remainder // 5):
+            caps[order[i % len(order)]] += 5
     for name in item_names:
         if name not in caps:
             caps[name] = 0

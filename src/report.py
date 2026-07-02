@@ -57,8 +57,6 @@ def results_to_dataframe(item_results, criteria: Optional[Dict[str, Any]] = None
     display_caps: Dict[tuple, int] = {}
     if criteria:
         for sec_name, cfg in criteria.get("sections", {}).items():
-            if not section_uses_shared_pool(cfg):
-                continue
             names = list(cfg.get("items", {}).keys())
             for item_name, cap in allocate_section_item_caps(cfg, names).items():
                 display_caps[(sec_name, item_name)] = cap
