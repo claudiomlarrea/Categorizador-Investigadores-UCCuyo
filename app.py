@@ -391,10 +391,16 @@ def main() -> None:
         item_topes_cfg = sum(
             float(it.get("max_points", 0)) for it in cfg.get("items", {}).values()
         )
-        if item_topes_cfg > sec_max + 0.5:
+        section_overflow = item_topes_cfg > sec_max + 0.5 and sec_sub >= sec_max - 0.5
+        if section_overflow:
             st.caption(
                 f"Cupo global de la sección: **{int(sec_max)} pts**. "
                 "Cada ítem tiene un tope dentro de ese cupo (columna «Tope en sección»)."
+            )
+        elif item_topes_cfg > sec_max + 0.5:
+            st.caption(
+                f"Cupo global de la sección: **{int(sec_max)} pts**. "
+                "Se aplican los topes por ítem del Anexo VII; el cupo global solo limita si el subtotal lo supera."
             )
         elif not df_sec.empty and abs(float(df_sec["Tope en sección"].sum()) - sec_max) > 0.6:
             tope_col_sum = float(df_sec["Tope en sección"].sum())

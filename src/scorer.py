@@ -1174,6 +1174,7 @@ def _score_with_counts(
     for section_name, sec in sections.items():
         sec_max = float(sec.get("max_points", 10**9))
         sec_sum = 0.0
+        sec_indices: List[int] = []
 
         items = sec.get("items", {})
         item_names = list(items.keys())
@@ -1438,12 +1439,8 @@ def _score_with_counts(
                 )
 
             raw_points = count * unit_points
-            effective_max = item_max
-            if section_share_caps:
-                share_cap = float(section_share_caps.get(item_name, item_max))
-                effective_max = min(item_max, share_cap) if item_max >= 0 else share_cap
             capped_item_points = (
-                int(min(raw_points, effective_max)) if effective_max >= 0 else int(raw_points)
+                int(min(raw_points, item_max)) if item_max >= 0 else int(raw_points)
             )
 
             results.append(
@@ -1455,13 +1452,38 @@ def _score_with_counts(
                     unit_points=unit_points,
                     raw_points=raw_points,
                     capped_item_points=capped_item_points,
-                    item_max_points=float(section_share_caps.get(item_name, item_max))
-                    if section_share_caps
-                    else item_max,
+                    item_max_points=item_max,
                     evidence=evidence[:evidence_max_chars] if evidence else "",
                 )
             )
+            sec_indices.append(len(results) - 1)
             sec_sum += capped_item_points
+
+        if section_share_caps and sec_sum > sec_max + 1e-9:
+            sec_sum = 0.0
+            for idx in sec_indices:
+                r = results[idx]
+                share_cap = float(section_share_caps.get(r.item, r.item_max_points))
+                effective_max = (
+                    min(r.item_max_points, share_cap) if r.item_max_points >= 0 else share_cap
+                )
+                new_pts = (
+                    int(min(r.capped_item_points, effective_max))
+                    if effective_max >= 0
+                    else int(r.capped_item_points)
+                )
+                results[idx] = ItemResult(
+                    section=r.section,
+                    item=r.item,
+                    pattern=r.pattern,
+                    count=r.count,
+                    unit_points=r.unit_points,
+                    raw_points=r.raw_points,
+                    capped_item_points=new_pts,
+                    item_max_points=share_cap,
+                    evidence=r.evidence,
+                )
+                sec_sum += new_pts
 
         sec_sum = min(sec_sum, sec_max)
         section_totals[section_name] = sec_sum
