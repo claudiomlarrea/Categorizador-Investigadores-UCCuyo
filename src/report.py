@@ -71,7 +71,7 @@ def results_to_dataframe(item_results, criteria: Optional[Dict[str, Any]] = None
                 "Puntos unitarios": r.unit_points,
                 "Puntaje bruto": r.raw_points,
                 "Tope en sección": tope if criteria else r.item_max_points,
-                "Puntaje (tope aplicado)": r.capped_item_points,
+                "Puntaje (tope aplicado)": int(r.capped_item_points),
                 "Evidencia (1er match)": r.evidence,
             }
         )

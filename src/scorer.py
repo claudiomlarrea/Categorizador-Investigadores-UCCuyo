@@ -35,6 +35,27 @@ def _compile(pattern: str) -> re.Pattern:
     return re.compile(pattern, flags=re.IGNORECASE | re.UNICODE)
 
 
+def _allocate_integer_shares(weights: List[float], total: int) -> List[int]:
+    """Reparte un total entero en proporción a los pesos (método de restos mayores)."""
+    if total <= 0 or not weights:
+        return [0] * len(weights)
+    weight_sum = sum(weights)
+    if weight_sum <= 0:
+        return [0] * len(weights)
+    raw = [w / weight_sum * total for w in weights]
+    shares = [int(x) for x in raw]
+    remainder = total - sum(shares)
+    if remainder > 0:
+        order = sorted(
+            range(len(weights)),
+            key=lambda i: (raw[i] - shares[i], weights[i]),
+            reverse=True,
+        )
+        for k in range(remainder):
+            shares[order[k % len(order)]] += 1
+    return shares
+
+
 def _pick_evidence(text: str, m: re.Match, max_chars: int = 260) -> str:
     start = max(0, m.start() - 80)
     end = min(len(text), m.end() + 120)
@@ -1431,7 +1452,7 @@ def _score_with_counts(
                 )
 
             raw_points = count * unit_points
-            capped_item_points = min(raw_points, item_max) if item_max >= 0 else raw_points
+            capped_item_points = int(min(raw_points, item_max)) if item_max >= 0 else int(raw_points)
 
             results.append(
                 ItemResult(
@@ -1450,14 +1471,10 @@ def _score_with_counts(
             sec_sum += capped_item_points
 
         if sec_sum > sec_max and sec_sum > 0:
-            allocated = 0.0
-            for j, idx in enumerate(sec_indices):
+            weights = [results[idx].capped_item_points for idx in sec_indices]
+            shares = _allocate_integer_shares(weights, int(sec_max))
+            for idx, new_pts in zip(sec_indices, shares):
                 r = results[idx]
-                if j == len(sec_indices) - 1:
-                    new_pts = round(sec_max - allocated, 2)
-                else:
-                    new_pts = round(r.capped_item_points * sec_max / sec_sum, 2)
-                    allocated += new_pts
                 results[idx] = ItemResult(
                     section=r.section,
                     item=r.item,
@@ -1465,11 +1482,11 @@ def _score_with_counts(
                     count=r.count,
                     unit_points=r.unit_points,
                     raw_points=r.raw_points,
-                    capped_item_points=new_pts,
+                    capped_item_points=float(new_pts),
                     item_max_points=r.item_max_points,
                     evidence=r.evidence,
                 )
-            sec_sum = sec_max
+            sec_sum = float(sec_max)
         else:
             sec_sum = min(sec_sum, sec_max)
         section_totals[section_name] = sec_sum

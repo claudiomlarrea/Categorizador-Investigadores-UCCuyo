@@ -403,7 +403,7 @@ def main() -> None:
                 f"Los topes en sección mostrados suman {tope_col_sum:.0f} pts "
                 f"(máximo alcanzable con los ítems configurados)."
             )
-        st.info(f"Subtotal: **{sec_sub:.1f}** / máx **{sec_max:.0f}**")
+        st.info(f"Subtotal: **{int(round(sec_sub))}** / máx **{int(sec_max)}**")
 
     st.markdown("---")
     st.subheader("Resumen por sección")
