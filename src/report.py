@@ -1,5 +1,5 @@
 import io
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 from docx import Document
@@ -20,9 +20,47 @@ def category_label(code: str) -> str:
     return f"Categoría {code} — {name}" if name else f"Categoría {code}"
 
 
-def results_to_dataframe(item_results) -> pd.DataFrame:
+def allocate_section_display_caps(
+    section_cfg: Dict[str, Any], item_names: List[str]
+) -> Dict[str, float]:
+    """Reparte el tope de sección entre ítems cuando los topes parciales lo superan."""
+    sec_max = float(section_cfg.get("max_points", 0))
+    items_cfg = section_cfg.get("items", {})
+    weights = {
+        name: float(items_cfg.get(name, {}).get("max_points", 0)) for name in item_names
+    }
+    total = sum(weights.values())
+    if total <= sec_max or total <= 0:
+        return weights
+
+    caps: Dict[str, float] = {}
+    allocated = 0.0
+    for i, name in enumerate(item_names):
+        if i == len(item_names) - 1:
+            caps[name] = round(sec_max - allocated, 1)
+        else:
+            share = round(weights[name] / total * sec_max, 1)
+            caps[name] = share
+            allocated += share
+    return caps
+
+
+def results_to_dataframe(item_results, criteria: Optional[Dict[str, Any]] = None) -> pd.DataFrame:
+    display_caps: Dict[tuple, float] = {}
+    if criteria:
+        sections = criteria.get("sections", {})
+        by_section: Dict[str, List[str]] = {}
+        for r in item_results:
+            if r.item not in by_section.setdefault(r.section, []):
+                by_section[r.section].append(r.item)
+        for sec_name, names in by_section.items():
+            cfg = sections.get(sec_name, {})
+            for item_name, cap in allocate_section_display_caps(cfg, names).items():
+                display_caps[(sec_name, item_name)] = cap
+
     rows = []
     for r in item_results:
+        tope = display_caps.get((r.section, r.item), r.item_max_points)
         rows.append(
             {
                 "Sección": r.section,
@@ -30,7 +68,7 @@ def results_to_dataframe(item_results) -> pd.DataFrame:
                 "Ocurrencias": r.count,
                 "Puntos unitarios": r.unit_points,
                 "Puntaje bruto": r.raw_points,
-                "Tope ítem": r.item_max_points,
+                "Tope en sección": tope if criteria else r.item_max_points,
                 "Puntaje (tope aplicado)": r.capped_item_points,
                 "Evidencia (1er match)": r.evidence,
             }
@@ -104,7 +142,7 @@ def export_word(
     for section_name in scoring_sections:
         doc.add_heading(section_name, level=2)
         df_s = df_items[df_items["Sección"] == section_name].copy()
-        cols = ["Ítem", "Ocurrencias", "Puntaje (tope aplicado)", "Tope ítem"]
+        cols = ["Ítem", "Ocurrencias", "Puntaje (tope aplicado)", "Tope en sección"]
         if include_evidence:
             cols.append("Evidencia (1er match)")
 

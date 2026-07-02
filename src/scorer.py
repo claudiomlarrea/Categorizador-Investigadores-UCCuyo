@@ -1172,6 +1172,7 @@ def _score_with_counts(
     for section_name, sec in sections.items():
         sec_max = float(sec.get("max_points", 10**9))
         sec_sum = 0.0
+        sec_indices: List[int] = []
 
         items = sec.get("items", {})
         for item_name, item in items.items():
@@ -1445,9 +1446,32 @@ def _score_with_counts(
                     evidence=evidence[:evidence_max_chars] if evidence else "",
                 )
             )
+            sec_indices.append(len(results) - 1)
             sec_sum += capped_item_points
 
-        sec_sum = min(sec_sum, sec_max)
+        if sec_sum > sec_max and sec_sum > 0:
+            allocated = 0.0
+            for j, idx in enumerate(sec_indices):
+                r = results[idx]
+                if j == len(sec_indices) - 1:
+                    new_pts = round(sec_max - allocated, 2)
+                else:
+                    new_pts = round(r.capped_item_points * sec_max / sec_sum, 2)
+                    allocated += new_pts
+                results[idx] = ItemResult(
+                    section=r.section,
+                    item=r.item,
+                    pattern=r.pattern,
+                    count=r.count,
+                    unit_points=r.unit_points,
+                    raw_points=r.raw_points,
+                    capped_item_points=new_pts,
+                    item_max_points=r.item_max_points,
+                    evidence=r.evidence,
+                )
+            sec_sum = sec_max
+        else:
+            sec_sum = min(sec_sum, sec_max)
         section_totals[section_name] = sec_sum
         total_points += sec_sum
 

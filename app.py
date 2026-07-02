@@ -347,7 +347,7 @@ def main() -> None:
         )
 
     desc_cat = categorias.get(category, {}).get("descripcion", "")
-    df_items = results_to_dataframe(item_results)
+    df_items = results_to_dataframe(item_results, criteria=criteria)
     df_sec_tot = section_totals_dataframe(
         {k: v for k, v in section_totals.items() if k in _scoring_sections(criteria)}
     )
@@ -384,10 +384,25 @@ def main() -> None:
         st.markdown(f"### {section_name}")
         df_sec = df_items[df_items["Sección"] == section_name].copy()
         df_sec = df_sec.sort_values(["Puntaje (tope aplicado)", "Ocurrencias"], ascending=False)
-        display_cols = ["Ítem", "Ocurrencias", "Puntaje (tope aplicado)", "Tope ítem"]
+        display_cols = ["Ítem", "Ocurrencias", "Puntaje (tope aplicado)", "Tope en sección"]
         if debug:
             display_cols.append("Evidencia (1er match)")
         st.dataframe(df_sec[display_cols], use_container_width=True, hide_index=True)
+        item_topes_cfg = sum(
+            float(it.get("max_points", 0)) for it in cfg.get("items", {}).values()
+        )
+        if item_topes_cfg > sec_max + 0.5:
+            st.caption(
+                f"Cupo global de la sección: **{sec_max:.0f} pts**. "
+                "Los topes por fila reparten ese cupo; si la suma de puntajes supera el tope, "
+                "se prorratea proporcionalmente entre ítems."
+            )
+        elif not df_sec.empty and abs(float(df_sec["Tope en sección"].sum()) - sec_max) > 0.6:
+            tope_col_sum = float(df_sec["Tope en sección"].sum())
+            st.caption(
+                f"Los topes en sección mostrados suman {tope_col_sum:.0f} pts "
+                f"(máximo alcanzable con los ítems configurados)."
+            )
         st.info(f"Subtotal: **{sec_sub:.1f}** / máx **{sec_max:.0f}**")
 
     st.markdown("---")
