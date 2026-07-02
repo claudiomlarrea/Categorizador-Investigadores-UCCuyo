@@ -26,10 +26,9 @@ from report import (  # noqa: E402
     category_label,
     export_excel,
     export_word,
-    audit_only_items,
     filter_audit_items,
     results_to_dataframe,
-    section_totals_dataframe,
+    section_totals_from_items,
 )
 from section_caps import section_effective_max  # noqa: E402
 from category_equivalence import (  # noqa: E402
@@ -172,11 +171,16 @@ def _guess_name(text: str) -> str:
 
 
 def _scoring_sections(criteria: dict) -> list[str]:
-    return [
-        name
-        for name, cfg in criteria.get("sections", {}).items()
-        if float(cfg.get("max_points", 0)) > 0
-    ]
+    from report import scoring_section_names
+
+    return scoring_section_names(criteria)
+
+
+_CVAR_TAB_TO_SCORING_SECTION = {
+    "publicaciones": "Producción científica",
+    "formacion_rrhh": "Formación de recursos humanos",
+    "evaluacion_gestion": "Actividades de evaluación y gestión editorial",
+}
 
 
 def _load_text_from_upload(uploaded) -> tuple[str, str]:
@@ -351,9 +355,14 @@ def main() -> None:
 
     desc_cat = categorias.get(category, {}).get("descripcion", "")
     df_items = results_to_dataframe(item_results, criteria=criteria)
-    df_sec_tot = section_totals_dataframe(
-        {k: v for k, v in section_totals.items() if k in _scoring_sections(criteria)}
-    )
+    df_sec_tot = section_totals_from_items(df_items, criteria, include_audit=debug)
+    computed_total = int(df_sec_tot["Subtotal"].sum())
+    if abs(computed_total - total) > 0.5:
+        st.warning(
+            f"El total calculado desde ítems ({computed_total}) difiere del motor "
+            f"({total:.0f}). Se muestra la suma por ítems."
+        )
+        total = float(computed_total)
 
     st.markdown("---")
     st.subheader("Resultado de categorización")
@@ -383,19 +392,12 @@ def main() -> None:
     for section_name in _scoring_sections(criteria):
         cfg = criteria["sections"][section_name]
         sec_max = float(cfg.get("max_points", 0))
-        sec_sub = float(section_totals.get(section_name, 0.0))
         st.markdown(f"### {section_name}")
         df_sec = df_items[df_items["Sección"] == section_name].copy()
-        audit_rows = df_sec[df_sec.apply(lambda r: (r["Sección"], r["Ítem"]) in audit_only_items(criteria), axis=1)]
         df_sec = filter_audit_items(df_sec, criteria, include_audit=debug)
-        if not audit_rows.empty and int(audit_rows["Ocurrencias"].sum()) > 0 and not debug:
-            n_audit = int(audit_rows["Ocurrencias"].sum())
-            st.caption(
-                f"Se detectaron **{n_audit}** tesis/informes inéditos en publicaciones. "
-                "Por Anexo VII **no puntúan** en Producción científica "
-                "(evita doble conteo; la formación de grado/posgrado puntúa en «Formación académica»)."
-            )
         df_sec = df_sec.sort_values(["Puntaje (tope aplicado)", "Ocurrencias"], ascending=False)
+        sec_rows = df_sec_tot[df_sec_tot["Sección"] == section_name]
+        sec_sub = float(sec_rows["Subtotal"].iloc[0]) if not sec_rows.empty else 0.0
         display_cols = ["Ítem", "Ocurrencias", "Puntaje (tope aplicado)", "Tope en sección"]
         if debug:
             display_cols.append("Evidencia (1er match)")
@@ -426,7 +428,23 @@ def main() -> None:
 
     st.markdown("---")
     st.subheader("Resumen por sección")
-    st.dataframe(df_sec_tot, use_container_width=True, hide_index=True)
+    resumen_display = df_sec_tot.copy()
+    resumen_display.loc[len(resumen_display)] = {"Sección": "TOTAL", "Subtotal": int(total)}
+    st.dataframe(resumen_display, use_container_width=True, hide_index=True)
+
+    missing_tabs = structured.get("audit", {}).get("sections_missing", [])
+    zero_from_missing = [
+        _CVAR_TAB_TO_SCORING_SECTION[key]
+        for key in missing_tabs
+        if key in _CVAR_TAB_TO_SCORING_SECTION
+        and int(df_sec_tot.loc[df_sec_tot["Sección"] == _CVAR_TAB_TO_SCORING_SECTION[key], "Subtotal"].sum()) == 0
+    ]
+    if zero_from_missing:
+        st.info(
+            "Apartados con **0 pts** porque el CVar no trae esa pestaña: "
+            + ", ".join(f"**{s}**" for s in zero_from_missing)
+            + ". Revisá la tabla «Auditoría de extracción» (Presente = No). No es un fallo de suma."
+        )
 
     base_name = uploaded.name.rsplit(".", 1)[0].replace(" ", "_")
 

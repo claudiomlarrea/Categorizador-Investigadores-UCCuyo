@@ -86,6 +86,28 @@ def section_totals_dataframe(section_totals: Dict[str, float]) -> pd.DataFrame:
     return df.sort_values("Subtotal", ascending=False)
 
 
+def scoring_section_names(criteria: Dict[str, Any]) -> List[str]:
+    return [
+        name
+        for name, cfg in criteria.get("sections", {}).items()
+        if float(cfg.get("max_points", 0)) > 0
+    ]
+
+
+def section_totals_from_items(
+    df_items: pd.DataFrame,
+    criteria: Dict[str, Any],
+    include_audit: bool = False,
+) -> pd.DataFrame:
+    """Subtotales por sección = suma de «Puntaje (tope aplicado)» de cada ítem."""
+    df = filter_audit_items(df_items, criteria, include_audit=include_audit)
+    rows = []
+    for name in scoring_section_names(criteria):
+        sub = int(df.loc[df["Sección"] == name, "Puntaje (tope aplicado)"].sum())
+        rows.append({"Sección": name, "Subtotal": sub})
+    return pd.DataFrame(rows).sort_values("Subtotal", ascending=False)
+
+
 def export_excel(
     df_items: pd.DataFrame,
     df_sec_tot: pd.DataFrame,
