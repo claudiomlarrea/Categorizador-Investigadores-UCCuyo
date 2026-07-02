@@ -393,9 +393,8 @@ def main() -> None:
         )
         if item_topes_cfg > sec_max + 0.5:
             st.caption(
-                f"Cupo global de la sección: **{sec_max:.0f} pts**. "
-                "Los topes por fila reparten ese cupo; si la suma de puntajes supera el tope, "
-                "se prorratea proporcionalmente entre ítems."
+                f"Cupo global de la sección: **{int(sec_max)} pts**. "
+                "Cada ítem tiene un tope dentro de ese cupo (columna «Tope en sección»)."
             )
         elif not df_sec.empty and abs(float(df_sec["Tope en sección"].sum()) - sec_max) > 0.6:
             tope_col_sum = float(df_sec["Tope en sección"].sum())

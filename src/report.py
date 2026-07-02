@@ -5,6 +5,8 @@ import pandas as pd
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
+from section_caps import allocate_section_item_caps
+
 CATEGORY_LABELS = {
     "I": "Investigador Superior",
     "II": "Investigador Principal",
@@ -23,46 +25,12 @@ def category_label(code: str) -> str:
 def allocate_section_display_caps(
     section_cfg: Dict[str, Any], item_names: List[str]
 ) -> Dict[str, int]:
-    """Reparte el tope de sección entre ítems (enteros) cuando los topes parciales lo superan."""
-    sec_max = int(round(float(section_cfg.get("max_points", 0))))
-    items_cfg = section_cfg.get("items", {})
-    weights = {
-        name: float(items_cfg.get(name, {}).get("max_points", 0)) for name in item_names
-    }
-    total = sum(weights.values())
-    if total <= sec_max or total <= 0:
-        return {name: int(weights[name]) for name in item_names}
-
-    raw_shares = {name: weights[name] / total * sec_max for name in item_names}
-    caps = {name: int(raw_shares[name]) for name in item_names}
-    remainder = sec_max - sum(caps.values())
-    if remainder > 0:
-        order = sorted(
-            item_names,
-            key=lambda n: (raw_shares[n] - caps[n], weights[n]),
-            reverse=True,
-        )
-        for i in range(remainder):
-            caps[order[i % len(order)]] += 1
-    return caps
+    return allocate_section_item_caps(section_cfg, item_names)
 
 
 def results_to_dataframe(item_results, criteria: Optional[Dict[str, Any]] = None) -> pd.DataFrame:
-    display_caps: Dict[tuple, float] = {}
-    if criteria:
-        sections = criteria.get("sections", {})
-        by_section: Dict[str, List[str]] = {}
-        for r in item_results:
-            if r.item not in by_section.setdefault(r.section, []):
-                by_section[r.section].append(r.item)
-        for sec_name, names in by_section.items():
-            cfg = sections.get(sec_name, {})
-            for item_name, cap in allocate_section_display_caps(cfg, names).items():
-                display_caps[(sec_name, item_name)] = cap
-
     rows = []
     for r in item_results:
-        tope = display_caps.get((r.section, r.item), r.item_max_points)
         rows.append(
             {
                 "Sección": r.section,
@@ -70,7 +38,7 @@ def results_to_dataframe(item_results, criteria: Optional[Dict[str, Any]] = None
                 "Ocurrencias": r.count,
                 "Puntos unitarios": r.unit_points,
                 "Puntaje bruto": r.raw_points,
-                "Tope en sección": tope if criteria else r.item_max_points,
+                "Tope en sección": int(r.item_max_points),
                 "Puntaje (tope aplicado)": int(r.capped_item_points),
                 "Evidencia (1er match)": r.evidence,
             }

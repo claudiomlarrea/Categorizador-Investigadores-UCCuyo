@@ -3,6 +3,8 @@ import re
 from dataclasses import dataclass
 from typing import Dict, Any, List, Tuple, Optional
 
+from section_caps import allocate_section_item_caps
+
 
 # =========================
 # Results struct
@@ -33,27 +35,6 @@ def load_criteria(path: str = "criteria.json") -> Dict[str, Any]:
 # =========================
 def _compile(pattern: str) -> re.Pattern:
     return re.compile(pattern, flags=re.IGNORECASE | re.UNICODE)
-
-
-def _allocate_integer_shares(weights: List[float], total: int) -> List[int]:
-    """Reparte un total entero en proporción a los pesos (método de restos mayores)."""
-    if total <= 0 or not weights:
-        return [0] * len(weights)
-    weight_sum = sum(weights)
-    if weight_sum <= 0:
-        return [0] * len(weights)
-    raw = [w / weight_sum * total for w in weights]
-    shares = [int(x) for x in raw]
-    remainder = total - sum(shares)
-    if remainder > 0:
-        order = sorted(
-            range(len(weights)),
-            key=lambda i: (raw[i] - shares[i], weights[i]),
-            reverse=True,
-        )
-        for k in range(remainder):
-            shares[order[k % len(order)]] += 1
-    return shares
 
 
 def _pick_evidence(text: str, m: re.Match, max_chars: int = 260) -> str:
@@ -1193,9 +1174,14 @@ def _score_with_counts(
     for section_name, sec in sections.items():
         sec_max = float(sec.get("max_points", 10**9))
         sec_sum = 0.0
-        sec_indices: List[int] = []
 
         items = sec.get("items", {})
+        item_names = list(items.keys())
+        item_max_sum = sum(float(items[n].get("max_points", 0)) for n in item_names)
+        section_share_caps: Dict[str, int] = {}
+        if item_max_sum > sec_max + 1e-9:
+            section_share_caps = allocate_section_item_caps(sec, item_names)
+
         for item_name, item in items.items():
             pattern = item.get("pattern", "")
             unit_points = float(item.get("unit_points", 0))
@@ -1452,7 +1438,13 @@ def _score_with_counts(
                 )
 
             raw_points = count * unit_points
-            capped_item_points = int(min(raw_points, item_max)) if item_max >= 0 else int(raw_points)
+            effective_max = item_max
+            if section_share_caps:
+                share_cap = float(section_share_caps.get(item_name, item_max))
+                effective_max = min(item_max, share_cap) if item_max >= 0 else share_cap
+            capped_item_points = (
+                int(min(raw_points, effective_max)) if effective_max >= 0 else int(raw_points)
+            )
 
             results.append(
                 ItemResult(
@@ -1463,32 +1455,15 @@ def _score_with_counts(
                     unit_points=unit_points,
                     raw_points=raw_points,
                     capped_item_points=capped_item_points,
-                    item_max_points=item_max,
+                    item_max_points=float(section_share_caps.get(item_name, item_max))
+                    if section_share_caps
+                    else item_max,
                     evidence=evidence[:evidence_max_chars] if evidence else "",
                 )
             )
-            sec_indices.append(len(results) - 1)
             sec_sum += capped_item_points
 
-        if sec_sum > sec_max and sec_sum > 0:
-            weights = [results[idx].capped_item_points for idx in sec_indices]
-            shares = _allocate_integer_shares(weights, int(sec_max))
-            for idx, new_pts in zip(sec_indices, shares):
-                r = results[idx]
-                results[idx] = ItemResult(
-                    section=r.section,
-                    item=r.item,
-                    pattern=r.pattern,
-                    count=r.count,
-                    unit_points=r.unit_points,
-                    raw_points=r.raw_points,
-                    capped_item_points=float(new_pts),
-                    item_max_points=r.item_max_points,
-                    evidence=r.evidence,
-                )
-            sec_sum = float(sec_max)
-        else:
-            sec_sum = min(sec_sum, sec_max)
+        sec_sum = min(sec_sum, sec_max)
         section_totals[section_name] = sec_sum
         total_points += sec_sum
 
