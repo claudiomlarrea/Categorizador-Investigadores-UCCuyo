@@ -77,38 +77,37 @@
           "Artículos en revistas (tolerante y multilínea)": {
             "pattern": "(?is)(?:\\n\\s*PUBLICACIONES\\b[\\s\\S]{0,12000})?(?:\\n\\s*Art[ií]culos\\b[\\s\\S]{0,9000})?(?:^|\\n)\\s*(?!.*\\b(?:informe\\s+in[eé]dito|Informe\\s+in[eé]dito|Tesis\\s+de\\s+|Tesis\\s+de\\s+doctorado|Tesis\\s+de\\s+grado)\\b)(?:null\\.?\\s*)?[A-ZÁÉÍÓÚÜÑa-záéíóúüñ].{0,800}?(?:\\\".{10,300}?\\\"|\\b(?!doi\\b)(?!ISBN\\b).{10,220}?\\b)\\.?\\s+[^\\n]{2,260}?,\\s*[^\\n]{0,240}?(?:\\((?:19\\d{2}|20\\d{2})\\)|\\b(?:19\\d{2}|20\\d{2})\\b)[^\\n]{0,400}?",
             "unit_points": 40,
-            "max_points": 320
+            "max_points": 179
           },
 
           "Artículos con DOI explícito": {
             "pattern": "(?is)(?:\\bdoi\\s*:\\s*|https?://(?:dx\\.)?doi\\.org/)(10\\.[0-9]{4,9}/[^\\s\\)\\]\\}\\\"\\'<>]+)",
             "unit_points": 40,
-            "max_points": 80
+            "max_points": 45
           },
 
           "Libros / ISBN": {
             "pattern": "(?is)\\bISBN\\s*:?\\s*(?:97[89][0-9\\s\\-]{10,25}|[0-9][0-9\\s\\-]{8,25})",
             "unit_points": 20,
-            "max_points": 120
+            "max_points": 67
           },
 
           "Capítulos de libro": {
             "pattern": "(?is)(?:^|\\n)\\s*(?:null\\.?\\s*)?[^\\n]{0,600}?\\bCap[ií]tulo\\b[^\\n]{0,1200}?(?:\\bISBN\\b|\\b(19\\d{2}|20\\d{2})\\b)",
             "unit_points": 30,
-            "max_points": 120
+            "max_points": 67
           },
 
           "Trabajos en eventos / actas / libro de resúmenes": {
             "pattern": "(?is)(?:^|\\n)\\s*(?!.*\\bInforme\\s+in[eé]dito\\b)(?:null\\.?\\s*)?[^\\n]{0,1200}?\\bEn\\s+(?:Actas|ACTAS|Libro\\s+de\\s+Actas|Libro\\s+de\\s+resúmen(?:es)?|Libro\\s+de\\s+Resumenes|Congreso|Jornadas|Simposio|Symposium|Meeting|Taller|Workshop|BIOCELL\\s+abstracts?|Biocell)\\b[^\\n]{0,1200}?(?:\\((?:19\\d{2}|20\\d{2})\\)|\\b(?:19\\d{2}|20\\d{2})\\b)",
             "unit_points": 5,
-            "max_points": 120
+            "max_points": 67
           },
 
-          "Informes inéditos / tesis (excluir de publicaciones)": {
+          "Informes inéditos / tesis": {
             "pattern": "(?is)(?:^|\\n)\\s*(?:Informe\\s+in[eé]dito|inform[eé]\\s+in[eé]dito|Tesis\\s+de\\s+grado\\s*:|Tesis\\s+de\\s+maestr[ií]a\\s*:|Tesis\\s+de\\s+doctorado\\s*:)",
-            "unit_points": 0,
-            "max_points": 0,
-            "audit_only": true
+            "unit_points": 20,
+            "max_points": 45
           }
         }
       },
