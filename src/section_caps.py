@@ -10,21 +10,25 @@ def allocate_section_item_caps(
     weights = {
         name: float(items_cfg.get(name, {}).get("max_points", 0)) for name in item_names
     }
-    total = sum(weights.values())
+    scoring_names = [name for name in item_names if weights[name] > 0]
+    total = sum(weights[name] for name in scoring_names)
     if total <= sec_max or total <= 0:
         return {name: int(weights[name]) for name in item_names}
 
-    raw_shares = {name: weights[name] / total * sec_max for name in item_names}
-    caps = {name: int(raw_shares[name]) for name in item_names}
+    raw_shares = {name: weights[name] / total * sec_max for name in scoring_names}
+    caps = {name: int(raw_shares[name]) for name in scoring_names}
     remainder = sec_max - sum(caps.values())
     if remainder > 0:
         order = sorted(
-            item_names,
+            scoring_names,
             key=lambda n: (raw_shares[n] - caps[n], weights[n]),
             reverse=True,
         )
         for i in range(remainder):
             caps[order[i % len(order)]] += 1
+    for name in item_names:
+        if name not in caps:
+            caps[name] = 0
     return caps
 
 

@@ -26,6 +26,8 @@ from report import (  # noqa: E402
     category_label,
     export_excel,
     export_word,
+    audit_only_items,
+    filter_audit_items,
     results_to_dataframe,
     section_totals_dataframe,
 )
@@ -384,6 +386,15 @@ def main() -> None:
         sec_sub = float(section_totals.get(section_name, 0.0))
         st.markdown(f"### {section_name}")
         df_sec = df_items[df_items["Sección"] == section_name].copy()
+        audit_rows = df_sec[df_sec.apply(lambda r: (r["Sección"], r["Ítem"]) in audit_only_items(criteria), axis=1)]
+        df_sec = filter_audit_items(df_sec, criteria, include_audit=debug)
+        if not audit_rows.empty and int(audit_rows["Ocurrencias"].sum()) > 0 and not debug:
+            n_audit = int(audit_rows["Ocurrencias"].sum())
+            st.caption(
+                f"Se detectaron **{n_audit}** tesis/informes inéditos en publicaciones. "
+                "Por Anexo VII **no puntúan** en Producción científica "
+                "(evita doble conteo; la formación de grado/posgrado puntúa en «Formación académica»)."
+            )
         df_sec = df_sec.sort_values(["Puntaje (tope aplicado)", "Ocurrencias"], ascending=False)
         display_cols = ["Ítem", "Ocurrencias", "Puntaje (tope aplicado)", "Tope en sección"]
         if debug:

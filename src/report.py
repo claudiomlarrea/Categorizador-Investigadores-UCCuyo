@@ -32,6 +32,27 @@ def allocate_section_display_caps(
     return allocate_section_item_caps(section_cfg, item_names)
 
 
+def audit_only_items(criteria: Dict[str, Any]) -> set:
+    keys = set()
+    for sec_name, cfg in criteria.get("sections", {}).items():
+        for item_name, item in cfg.get("items", {}).items():
+            if item.get("audit_only"):
+                keys.add((sec_name, item_name))
+    return keys
+
+
+def filter_audit_items(
+    df_items: pd.DataFrame, criteria: Dict[str, Any], include_audit: bool = False
+) -> pd.DataFrame:
+    if include_audit or df_items.empty:
+        return df_items
+    audit = audit_only_items(criteria)
+    if not audit:
+        return df_items
+    mask = ~df_items.apply(lambda r: (r["Sección"], r["Ítem"]) in audit, axis=1)
+    return df_items[mask].copy()
+
+
 def results_to_dataframe(item_results, criteria: Optional[Dict[str, Any]] = None) -> pd.DataFrame:
     display_caps: Dict[tuple, int] = {}
     if criteria:
@@ -75,7 +96,8 @@ def export_excel(
     excel_out = io.BytesIO()
     with pd.ExcelWriter(excel_out, engine="xlsxwriter") as writer:
         for section_name in criteria.get("sections", {}).keys():
-            df_s = df_items[df_items["Sección"] == section_name].copy()
+            df_s = filter_audit_items(df_items, criteria)
+            df_s = df_s[df_s["Sección"] == section_name].copy()
             if df_s.empty:
                 continue
             df_s.to_excel(writer, sheet_name=section_name[:31], index=False)
@@ -125,7 +147,8 @@ def export_word(
 
     for section_name in scoring_sections:
         doc.add_heading(section_name, level=2)
-        df_s = df_items[df_items["Sección"] == section_name].copy()
+        df_s = filter_audit_items(df_items, criteria)
+        df_s = df_s[df_s["Sección"] == section_name].copy()
         cols = ["Ítem", "Ocurrencias", "Puntaje (tope aplicado)", "Tope en sección"]
         if include_evidence:
             cols.append("Evidencia (1er match)")

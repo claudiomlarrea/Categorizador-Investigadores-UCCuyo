@@ -107,7 +107,8 @@
           "Informes inéditos / tesis (excluir de publicaciones)": {
             "pattern": "(?is)(?:^|\\n)\\s*(?:Informe\\s+in[eé]dito|inform[eé]\\s+in[eé]dito|Tesis\\s+de\\s+grado\\s*:|Tesis\\s+de\\s+maestr[ií]a\\s*:|Tesis\\s+de\\s+doctorado\\s*:)",
             "unit_points": 0,
-            "max_points": 0
+            "max_points": 0,
+            "audit_only": true
           }
         }
       },
