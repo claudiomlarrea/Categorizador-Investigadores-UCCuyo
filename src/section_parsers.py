@@ -292,6 +292,8 @@ def _classify_evaluacion(entry: str) -> str:
         return "jurado"
     if re.search(r"evaluaci[oó]n de programas y proyectos", h):
         return "evaluacion_programas"
+    if re.search(r"evaluaci[oó]n de trabajos en revistas?", h):
+        return "revisor_revista"
     if re.search(r"proyectos institucionales|evaluaci[oó]n institucional", h):
         return "evaluacion_institucional"
     if re.search(r"integrante del comit[eé]|miembro del comit[eé]", h) and not re.search(r"organizada por", h):
@@ -396,7 +398,8 @@ def _parse_premios_eventos(block: str) -> List[Dict[str, Any]]:
     premios: List[Dict[str, Any]] = []
     for entry in entries:
         if re.search(
-            r"puesto|premio|menci[oó]n|distinci[oó]n|galard[oó]n|ponencia|accesit|\d{1,2}[º°o]\.",
+            r"puesto|premio|menci[oó]n|distinci[oó]n|galard[oó]n|ponencia|accesit|\d{1,2}[º°o]\.|"
+            r"diploma\s+de\s+honor|miembro\s+honorari[oa]|honor\s+por|reconocimiento|medalla",
             entry,
             re.I,
         ):
@@ -648,7 +651,7 @@ def parse_publicaciones_extended(block: str, scorer_mod: Any) -> Dict[str, Any]:
     cap_block = scorer_mod._extract_publicaciones_subsection(block, "Cap[ií]tulos") or combo_block or ""
     lib_block = scorer_mod._extract_publicaciones_subsection(block, "Libros") or combo_block or ""
 
-    art_rows = scorer_mod._merge_publicacion_lines(art_block)
+    art_rows = scorer_mod._collect_articulo_rows(block)
     art_count, _ = scorer_mod._dedupe_publication_rows(art_rows)
     valid_art = [r for r in art_rows if scorer_mod._is_valid_articulo_row(re.sub(r"\s+", " ", r).strip())]
 

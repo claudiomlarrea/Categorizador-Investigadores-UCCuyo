@@ -242,7 +242,9 @@ def _parse_antecedentes_items(block: str) -> List[Dict[str, Any]]:
             snippet,
             re.I,
         ) else ""
-        if not rol and re.search(
+        if not rol and re.search(r"\bconeu\b|\bacreditaci[oó]n\b", snippet, re.I):
+            rol = "gestion"
+        elif not rol and re.search(
             r"\b(?:Coordinador(?:a)?|Director(?:a)?|Secretari[oa]|Decan[oa]|Vicerrector(?:a)?|"
             r"Rector(?:a)?|Consejer[oa]|Jefe\s+de|Subprograma|Asistente\s+Ejecutiv[a]?|"
             r"Asistente\s+de\s+Investigaci[oó]n|"
@@ -281,9 +283,12 @@ def _append_trabajos_evento_from_block(pub_parsed: Dict[str, Any], extra_block: 
     sc = _scorer()
     trabajos = list(pub_parsed.get("trabajos_evento", []))
     seen = {sc._norm_key(t.get("titulo", "")[:180]) for t in trabajos}
+    evento_titles = sc._extract_evento_titles_set(extra_block)
 
     def _add(sn: str) -> None:
         if not sn or not re.search(r"(?:19|20)\d{2}", sn):
+            return
+        if sc._trabajo_duplicates_evento(sn, evento_titles):
             return
         key = sc._norm_key(sn[:180])
         if key in seen:

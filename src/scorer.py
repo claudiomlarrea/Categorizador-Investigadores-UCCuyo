@@ -394,6 +394,10 @@ def _classify_structural(entry: str) -> str:
     if re.search(r"\bmaestr[ií]a|\bmag[ií]ster|\bmagister\b", head):
         return "maestria"
 
+    # 3b Posgraduado (CVAR usa "POS GRADUADO" para especializaciones)
+    if re.search(r"\bpos[\s\-]?graduad|\bpost[\s\-]?graduad", head):
+        return "especializacion"
+
     # 4️⃣ Especialización
     if re.search(r"\bespecializaci[oó]n|\bespecialista\b", head):
         return "especializacion"
@@ -485,6 +489,17 @@ _RE_NEW_ARTICLE_LINE = re.compile(
     re.UNICODE,
 )
 
+_RE_COAUTHOR_LINE = re.compile(
+    r"^[A-ZÁÉÍÓÚÜÑ][^;]{1,90};\s+[A-ZÁÉÍÓÚÜÑ]",
+    re.UNICODE,
+)
+
+_RE_TRADUCCION_ROW = re.compile(
+    r"[A-ZÁÉÍÓÚÜÑa-záéíóúñü][^;]{0,100};\s*[A-ZÁÉÍÓÚÜÑa-záéíóúñü][^\"]*\"[^\"]{8,400}\""
+    r"[^\"]*?(?:\d{4}\.?\s*)?\d*\.?\s*Traducci[oó]n\s+publicada\s+en\s+revista",
+    re.I | re.UNICODE,
+)
+
 _RE_PAGE_HEADER_NAME = re.compile(
     r"^[A-ZÁÉÍÓÚÜÑ][A-ZÁÉÍÓÚÜÑ\s.'-]+,\s*[A-ZÁÉÍÓÚÜÑ][A-ZÁÉÍÓÚÜÑ\s.'-]+$",
     re.MULTILINE,
@@ -542,6 +557,76 @@ def _is_publication_noise_line(line: str) -> bool:
     return False
 
 
+def _split_traduccion_publicaciones(entries: List[str]) -> List[str]:
+    """Separa traducciones fusionadas tras tesis u otras citas en el bloque Artículos."""
+    out: List[str] = []
+    split_pat = re.compile(
+        r"(?=;\s*[A-ZÁÉÍÓÚÜÑ][^;]{1,90};\s+[A-ZÁÉÍÓÚÜÑ].*?Traducci[oó]n\s+publicada\s+en\s+revista)",
+        re.I | re.UNICODE,
+    )
+    for entry in entries:
+        if not re.search(r"(?i)Traducci[oó]n\s+publicada\s+en\s+revista", entry):
+            out.append(entry)
+            continue
+        parts = split_pat.split(entry)
+        if len(parts) <= 1:
+            out.append(entry)
+            continue
+        for part in parts:
+            part = part.strip().lstrip(";").strip()
+            if part:
+                out.append(part)
+    return out
+
+
+def _extract_traduccion_revista_rows(block: str) -> List[str]:
+    """Traducciones en revista que en CVs CONICET quedan bajo Tesis u otras subsecciones."""
+    if not block or not re.search(r"(?i)Traducci[oó]n\s+publicada", block):
+        return []
+    norm = re.sub(r"\s+", " ", block)
+    return [m.group(0).strip() for m in _RE_TRADUCCION_ROW.finditer(norm)]
+
+
+def _collect_articulo_rows(block: str) -> List[str]:
+    art_block = _extract_publicaciones_subsection(block, "Art[ií]culos") or block
+    rows = _merge_publicacion_lines(art_block)
+    tesis_block = _extract_publicaciones_subsection(block, "Tesis")
+    if tesis_block:
+        rows.extend(_extract_traduccion_revista_rows(tesis_block))
+    return rows
+
+
+def _extract_evento_titles_set(block: str) -> set:
+    titles: set = set()
+    if not block:
+        return titles
+    for m in re.finditer(r'(?i)Evento\s*:\s*"([^"]{5,300})"', block):
+        titles.add(_norm_key(m.group(1)[:180]))
+    for m in re.finditer(r'(?i)^\d{4}\s*[-–]\s+.*?"([^"]{5,300})"', block, re.M):
+        titles.add(_norm_key(m.group(1)[:180]))
+    return titles
+
+
+def _poster_evento_title(snippet: str) -> str:
+    m = re.search(r'(?i)Presentado en el evento\s*"([^"]+)"', snippet)
+    return _norm_key(m.group(1)[:180]) if m else ""
+
+
+def _trabajo_duplicates_evento(snippet: str, evento_titles: set) -> bool:
+    """Evita doble conteo cuando el póster/resumen corresponde a un evento ya listado."""
+    if not evento_titles:
+        return False
+    pt = _poster_evento_title(snippet)
+    if not pt:
+        return False
+    for et in evento_titles:
+        if pt == et or pt in et or et in pt:
+            return True
+        if len(pt) >= 20 and len(et) >= 20 and pt[:35] == et[:35]:
+            return True
+    return False
+
+
 def _merge_publicacion_lines(block: str) -> List[str]:
     """Agrupa líneas del bloque Artículos en citas completas (autor + título + revista + año)."""
     if not block or not block.strip():
@@ -587,6 +672,12 @@ def _merge_publicacion_lines(block: str) -> List[str]:
 
         if is_new_article and buf:
             flush()
+        if buf and _RE_COAUTHOR_LINE.match(line) and re.search(r'"[^"]{8,}"', " ".join(buf)):
+            flush()
+        if buf and re.search(r"(?i)Tesis\s+de", " ".join(buf)) and re.search(
+            r"(?i)Traducci[oó]n\s+publicada", line
+        ):
+            flush()
         buf.append(line)
 
         joined = re.sub(r"\s+", " ", " ".join(buf))
@@ -594,7 +685,7 @@ def _merge_publicacion_lines(block: str) -> List[str]:
             flush()
 
     flush()
-    return entries
+    return _split_traduccion_publicaciones(entries)
 
 
 def _extract_articulo_title(snippet: str) -> str:
@@ -671,7 +762,7 @@ def _count_articulos_revistas(full_text: str) -> Tuple[int, str]:
 
     art_block = _extract_publicaciones_subsection(block, "Art[ií]culos")
     target = art_block if art_block else block
-    return _dedupe_publication_rows(_merge_publicacion_lines(target))
+    return _dedupe_publication_rows(_collect_articulo_rows(block if art_block else target))
 
 
 def _extract_poster_presentaciones(block: str) -> List[str]:
@@ -707,10 +798,14 @@ def _count_trabajos_eventos_publicados(full_text: str) -> Tuple[int, str]:
     count = 0
     evidence = ""
     seen = set()
+    evt_m = re.search(r"(?is)PARTICIPACI[ÓO]N\s+EN\s+EVENTOS.*", full_text)
+    evento_titles = _extract_evento_titles_set(evt_m.group(0) if evt_m else "")
 
     def _add(snippet: str) -> None:
         nonlocal count, evidence
         if not snippet or not re.search(r"(?:19|20)\d{2}", snippet):
+            return
+        if _trabajo_duplicates_evento(snippet, evento_titles):
             return
         key = _norm_key(snippet[:180])
         if key in seen:
