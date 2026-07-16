@@ -209,7 +209,7 @@ _RE_ENTRY_START = re.compile(
     r"Diplomatura|Diplomado|Diploma|"
     r"Posdoctorado|Postdoctorado|"
     r"Doctorado|Doctor\s+en|Doctor\s+de\s+la\s+Universidad|Doctor(?:a)?\b|"
-    r"Maestr[ií]a|Mag[ií]ster|Magister|"
+    r"Maestr[ií]a|Mag[ií]ster|Magister|M[aá]ster|Master\s+of|Master\s+in|MSc|MBA|"
     r"Especializaci[oó]n|Especialidad|Especialista|"
     r"Profesorado|Profesor\s+Superior|Profesor\s+Universitario|Profesor(?:a)?\s+en|"
     r"Abogad[oa]s?|Notari[ao]s?|"
@@ -225,7 +225,7 @@ _TITLE_ENTRY_ANCHORS = (
     r"Diplomatura|Diplomado|Diploma|"
     r"Posdoctorado|Postdoctorado|"
     r"Doctorado|Doctor\s+en|Doctor\s+de\s+la\s+Universidad|Doctor(?:a)?\b|"
-    r"Maestr[ií]a|Mag[ií]ster|Magister|"
+    r"Maestr[ií]a|Mag[ií]ster|Magister|M[aá]ster|Master\s+of|Master\s+in|MSc|MBA|"
     r"Especializaci[oó]n|Especialidad|Especialista|"
     r"Profesorado|Profesor\s+Superior|Profesor\s+Universitario|Profesor(?:a)?\s+en|"
     r"Abogad[oa]s?|Notari[ao]s?|"
@@ -390,8 +390,12 @@ def _classify_structural(entry: str) -> str:
     if re.search(r"\bdoctorad[oa]?\b|\bdoctor(?:a)?\b", head):
         return "doctorado"
 
-    # 3️⃣ Maestría
-    if re.search(r"\bmaestr[ií]a|\bmag[ií]ster|\bmagister\b", head):
+    # 3️⃣ Maestría (incluye títulos en inglés: Master of Science, MSc, MBA)
+    if re.search(
+        r"\bmaestr[ií]a|\bmag[ií]ster|\bmagister\b|\bm[aá]ster\b|"
+        r"\bm\.?\s?sc\.?\b|\bmba\b|\bm\.?\s?a\.?\s+in\b",
+        head,
+    ):
         return "maestria"
 
     # 3b Posgraduado (CVAR usa "POS GRADUADO" para especializaciones)

@@ -204,6 +204,23 @@
       "eventos": 0,
       "investigador_proyecto": 0,
       "gestion": 4
+    },
+    "pontoriero_2026": {
+      "path": "../../Downloads/CVAR - Giuliano Pontoriero - 2026.pdf",
+      "path_alt": "/Users/claudiolarrea/Downloads/CVAR - Giuliano Pontoriero - 2026.pdf",
+      "required": false,
+      "category": "IV",
+      "total_min": 513,
+      "total_max": 517,
+      "cursos": 0,
+      "articulos": 2,
+      "libros": 0,
+      "capitulos": 3,
+      "trabajos_evento": 0,
+      "premios": 0,
+      "eventos": 0,
+      "investigador_proyecto": 0,
+      "gestion": 0
     }
   }
 }
