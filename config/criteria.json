@@ -279,7 +279,7 @@
         "Eventos CyT (organizador/conferencista/asistente)": {
           "pattern": "(?ims)^\\s*(?:\\d{4}|\\d{2}/\\d{4})\\s*(?:-|–)?\\s*(?:Actualidad|\\d{4}|\\d{2}/\\d{4})?.*?(?:Evento\\s*:|Congreso|Jornadas|Simposio|Symposium|Meeting|Workshop|Taller|Conferencia|Seminario|Encuentro)[\\s\\S]*?(?:Modo\\s+de\\s+participaci[oó]n\\s*:|Organizad[oa]\\s+por\\s*:|Organizador(?:a)?\\b|Organizador\\s+general\\b|Conferencista\\b|Ponente\\b|Expositor\\b|Asistente\\b|Participante\\b)?[\\s\\S]*?(?=^\\s*(?:\\d{4}|\\d{2}/\\d{4})\\s*(?:-|–)?\\s*|\\Z)",
           "unit_points": 10,
-          "max_points": 120
+          "max_points": 350
         },
 
         "Actividades profesionales relevantes (no docencia)": {
