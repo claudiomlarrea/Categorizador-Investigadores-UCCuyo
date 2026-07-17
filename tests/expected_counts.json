@@ -221,6 +221,24 @@
       "eventos": 0,
       "investigador_proyecto": 0,
       "gestion": 0
+    },
+    "coria_javier": {
+      "path": "../../Downloads/CVar Javier Coria.pdf",
+      "path_alt": "/Users/claudiolarrea/Downloads/CVar Javier Coria.pdf",
+      "required": false,
+      "category": "II",
+      "total_min": 1657,
+      "total_max": 1661,
+      "cursos": 15,
+      "articulos": 14,
+      "articulos_doi": 2,
+      "libros": 2,
+      "capitulos": 0,
+      "trabajos_evento": 10,
+      "premios": 0,
+      "eventos": 7,
+      "investigador_proyecto": 4,
+      "gestion": 10
     }
   }
 }

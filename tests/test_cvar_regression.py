@@ -51,6 +51,7 @@ def _analyze(pdf_path: Path) -> dict:
         "total": total,
         "cursos": len(structured["items"]["formacion_complementaria"].get("cursos", [])),
         "articulos": pub.get("articulos_revista", 0),
+        "articulos_doi": pub.get("articulos_doi", 0),
         "libros": pub.get("libros_isbn", 0),
         "capitulos": pub.get("capitulos_libro", 0),
         "trabajos_evento": pub.get("trabajos_evento_publicados", 0),
@@ -100,3 +101,8 @@ def test_cvar_regression(key, spec, pdf_path):
     ):
         expected = spec[field]
         assert result[field] == expected, f"{key}: {field} esperado {expected}, obtuvo {result[field]}"
+
+    if "articulos_doi" in spec:
+        assert result["articulos_doi"] == spec["articulos_doi"], (
+            f"{key}: articulos_doi esperado {spec['articulos_doi']}, obtuvo {result['articulos_doi']}"
+        )

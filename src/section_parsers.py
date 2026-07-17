@@ -698,7 +698,13 @@ def parse_publicaciones_extended(block: str, scorer_mod: Any) -> Dict[str, Any]:
         sn = re.sub(r"\s+", " ", row).strip()
         _add_trabajo(sn)
 
-    doi_count = len(re.findall(r"(?:doi\s*:\s*|https?://(?:dx\.)?doi\.org/)(10\.\S+)", block, re.I))
+    doi_count = len(
+        re.findall(
+            r"(?:doi\s*:\s*|(?:https?://)?(?:dx\.)?doi\.org/)(10\.\S+)",
+            block,
+            re.I,
+        )
+    )
 
     return {
         "articulos": [{"titulo": r[:300]} for r in valid_art],
