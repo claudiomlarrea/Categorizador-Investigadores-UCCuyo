@@ -167,8 +167,9 @@ _NEXT_MARKERS = [
 ]
 
 _COMP_HEADERS = [
-    r"\bFORMACI[ÓO]N\s+COMPLEMENTARIA\b",
-    r"\bFORMACION\s+COMPLEMENTARIA\b",
+    # Anclar a línea (evitar match en biografía: "formación complementaria en…")
+    r"(?m)^\s*FORMACI[ÓO]N\s+COMPLEMENTARIA\b",
+    r"(?m)^\s*FORMACION\s+COMPLEMENTARIA\b",
 ]
 
 _COMP_END_MARKERS = _NEXT_MARKERS + [

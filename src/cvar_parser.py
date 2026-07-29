@@ -328,7 +328,11 @@ def _build_counts(text: str, section_text: Dict[str, str], parsed_items: Dict[st
         cursos_sin = sum(1 for c in cursos_items if not c.get("con_horas"))
     else:
         cursos_con, cursos_sin, _ = sc._count_cursos(text)
-    idiomas, _ = sc._count_idiomas(text)
+    idiomas_items = parsed_items.get("formacion_complementaria", {}).get("idiomas", [])
+    if idiomas_items:
+        idiomas = len(idiomas_items)
+    else:
+        idiomas, _ = sc._count_idiomas(text)
     antecedentes, antecedentes_ev = sc._count_antecedentes_cyt(text)
     ant_items = parsed_items.get("antecedentes_cyt", {}).get("entradas", [])
     if ant_items:
