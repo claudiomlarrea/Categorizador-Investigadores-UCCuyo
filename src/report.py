@@ -63,17 +63,18 @@ def results_to_dataframe(item_results, criteria: Optional[Dict[str, Any]] = None
 
     rows = []
     for r in item_results:
+        applied = int(r.capped_item_points)
         tope = display_caps.get((r.section, r.item))
         if tope is None and criteria:
-            # Sin tope de ítem (max_points < 0) o no mapeado
             cfg = criteria.get("sections", {}).get(r.section, {})
             item_cfg = cfg.get("items", {}).get(r.item, {})
             if float(item_cfg.get("max_points", r.item_max_points)) < 0:
-                tope_display: Any = "—"
+                # Ítem sin tope fijo: mostrar el puntaje aplicado (evita "—").
+                tope_display: Any = applied
             else:
-                tope_display = int(r.item_max_points) if r.item_max_points >= 0 else "—"
+                tope_display = int(r.item_max_points) if r.item_max_points >= 0 else applied
         elif tope is None:
-            tope_display = "—" if r.item_max_points < 0 else int(r.item_max_points)
+            tope_display = applied if r.item_max_points < 0 else int(r.item_max_points)
         else:
             tope_display = int(tope)
         rows.append(
@@ -84,7 +85,7 @@ def results_to_dataframe(item_results, criteria: Optional[Dict[str, Any]] = None
                 "Puntos unitarios": r.unit_points,
                 "Puntaje bruto": r.raw_points,
                 "Tope en sección": tope_display,
-                "Puntaje (tope aplicado)": int(r.capped_item_points),
+                "Puntaje (tope aplicado)": applied,
                 "Evidencia (1er match)": r.evidence,
             }
         )

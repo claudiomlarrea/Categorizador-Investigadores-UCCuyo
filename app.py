@@ -415,8 +415,9 @@ def main() -> None:
         if has_uncapped:
             st.caption(
                 f"Máx. del apartado: **{int(sec_max)} pts**. "
-                "Algunos ítems no tienen tope individual (Tope en sección = —); "
-                "suman libremente y el subtotal del apartado limita el total."
+                "Algunos ítems no tienen tope fijo: en «Tope en sección» se muestra "
+                "el mismo valor que «Puntaje (tope aplicado)»; el subtotal del "
+                "apartado limita el total."
             )
         elif section_overflow:
             st.caption(
