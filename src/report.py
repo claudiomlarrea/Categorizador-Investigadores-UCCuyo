@@ -54,7 +54,7 @@ def filter_audit_items(
 
 
 def results_to_dataframe(item_results, criteria: Optional[Dict[str, Any]] = None) -> pd.DataFrame:
-    display_caps: Dict[tuple, int] = {}
+    display_caps: Dict[tuple, Optional[int]] = {}
     if criteria:
         for sec_name, cfg in criteria.get("sections", {}).items():
             names = list(cfg.get("items", {}).keys())
@@ -63,7 +63,19 @@ def results_to_dataframe(item_results, criteria: Optional[Dict[str, Any]] = None
 
     rows = []
     for r in item_results:
-        tope = display_caps.get((r.section, r.item), int(r.item_max_points))
+        tope = display_caps.get((r.section, r.item))
+        if tope is None and criteria:
+            # Sin tope de ítem (max_points < 0) o no mapeado
+            cfg = criteria.get("sections", {}).get(r.section, {})
+            item_cfg = cfg.get("items", {}).get(r.item, {})
+            if float(item_cfg.get("max_points", r.item_max_points)) < 0:
+                tope_display: Any = "—"
+            else:
+                tope_display = int(r.item_max_points) if r.item_max_points >= 0 else "—"
+        elif tope is None:
+            tope_display = "—" if r.item_max_points < 0 else int(r.item_max_points)
+        else:
+            tope_display = int(tope)
         rows.append(
             {
                 "Sección": r.section,
@@ -71,7 +83,7 @@ def results_to_dataframe(item_results, criteria: Optional[Dict[str, Any]] = None
                 "Ocurrencias": r.count,
                 "Puntos unitarios": r.unit_points,
                 "Puntaje bruto": r.raw_points,
-                "Tope en sección": tope,
+                "Tope en sección": tope_display,
                 "Puntaje (tope aplicado)": int(r.capped_item_points),
                 "Evidencia (1er match)": r.evidence,
             }
@@ -97,11 +109,14 @@ def section_totals_from_items(
     criteria: Dict[str, Any],
     include_audit: bool = False,
 ) -> pd.DataFrame:
-    """Subtotales por sección = suma de «Puntaje (tope aplicado)» de cada ítem."""
+    """Subtotales por sección = suma de ítems, limitada por el máx. del apartado."""
     df = filter_audit_items(df_items, criteria, include_audit=include_audit)
     rows = []
     for name in scoring_section_names(criteria):
         sub = int(df.loc[df["Sección"] == name, "Puntaje (tope aplicado)"].sum())
+        sec_max = int(round(float(criteria["sections"][name].get("max_points", 0))))
+        if sec_max > 0:
+            sub = min(sub, sec_max)
         rows.append({"Sección": name, "Subtotal": sub})
     return pd.DataFrame(rows).sort_values("Subtotal", ascending=False)
 

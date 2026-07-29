@@ -3,7 +3,7 @@ import re
 from dataclasses import dataclass
 from typing import Dict, Any, List, Tuple, Optional
 
-from section_caps import allocate_section_item_caps
+from section_caps import allocate_section_item_caps, capped_item_max_sum
 
 
 # =========================
@@ -1277,8 +1277,8 @@ def _score_with_counts(
 
         items = sec.get("items", {})
         item_names = list(items.keys())
-        item_max_sum = sum(float(items[n].get("max_points", 0)) for n in item_names)
-        section_share_caps: Dict[str, int] = {}
+        item_max_sum = capped_item_max_sum(sec)
+        section_share_caps: Dict[str, Optional[int]] = {}
         if item_max_sum > sec_max + 1e-9:
             section_share_caps = allocate_section_item_caps(sec, item_names)
 
@@ -1562,15 +1562,17 @@ def _score_with_counts(
             sec_sum = 0.0
             for idx in sec_indices:
                 r = results[idx]
-                share_cap = float(section_share_caps.get(r.item, r.item_max_points))
+                share_cap = section_share_caps.get(r.item)
+                # Ítems sin tope (max_points < 0 / share=None) no se recortan por reparto.
+                if share_cap is None or r.item_max_points < 0:
+                    sec_sum += r.capped_item_points
+                    continue
                 effective_max = (
-                    min(r.item_max_points, share_cap) if r.item_max_points >= 0 else share_cap
+                    min(r.item_max_points, float(share_cap))
+                    if r.item_max_points >= 0
+                    else float(share_cap)
                 )
-                new_pts = (
-                    int(min(r.capped_item_points, effective_max))
-                    if effective_max >= 0
-                    else int(r.capped_item_points)
-                )
+                new_pts = int(min(r.capped_item_points, effective_max))
                 results[idx] = ItemResult(
                     section=r.section,
                     item=r.item,
@@ -1579,7 +1581,7 @@ def _score_with_counts(
                     unit_points=r.unit_points,
                     raw_points=r.raw_points,
                     capped_item_points=new_pts,
-                    item_max_points=share_cap,
+                    item_max_points=float(share_cap),
                     evidence=r.evidence,
                 )
                 sec_sum += new_pts

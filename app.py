@@ -403,11 +403,22 @@ def main() -> None:
             display_cols.append("Evidencia (1er match)")
         st.dataframe(df_sec[display_cols], use_container_width=True, hide_index=True)
         item_topes_cfg = sum(
-            float(it.get("max_points", 0)) for it in cfg.get("items", {}).values()
+            float(it.get("max_points", 0))
+            for it in cfg.get("items", {}).values()
+            if float(it.get("max_points", 0)) > 0
+        )
+        has_uncapped = any(
+            float(it.get("max_points", 0)) < 0 for it in cfg.get("items", {}).values()
         )
         effective_max = section_effective_max(cfg)
         section_overflow = item_topes_cfg > sec_max + 0.5 and sec_sub >= sec_max - 0.5
-        if section_overflow:
+        if has_uncapped:
+            st.caption(
+                f"Máx. del apartado: **{int(sec_max)} pts**. "
+                "Algunos ítems no tienen tope individual (Tope en sección = —); "
+                "suman libremente y el subtotal del apartado limita el total."
+            )
+        elif section_overflow:
             st.caption(
                 f"Cupo global de la sección: **{int(sec_max)} pts**. "
                 "Cada ítem tiene un tope dentro de ese cupo (columna «Tope en sección»)."
@@ -419,7 +430,7 @@ def main() -> None:
                 f"**{int(sec_max)}**). Mientras el subtotal no lo supere, el puntaje "
                 "usa los topes individuales del Anexo VII."
             )
-        elif item_topes_cfg < sec_max - 0.5:
+        elif item_topes_cfg < sec_max - 0.5 and item_topes_cfg > 0:
             st.caption(
                 f"Tope Anexo VII: **{int(sec_max)} pts**. "
                 f"Máximo alcanzable con los ítems del valorador: **{effective_max} pts**."
