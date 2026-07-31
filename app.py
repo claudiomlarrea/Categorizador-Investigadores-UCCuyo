@@ -134,36 +134,45 @@ section[data-testid="stSidebar"] { background-color: var(--ucc-sidebar-bg); }
     border-radius: 8px !important;
     font-weight: 600 !important;
 }
-/* Resultado de categorización: legible y destacado en verde UCCuyo */
-div[data-testid="stMetricValue"] {
-    font-size: 1.45rem !important;
-    line-height: 1.35 !important;
-    white-space: normal !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-    word-break: break-word !important;
-    color: var(--ucc-green-dark) !important;
-    font-weight: 700 !important;
+/* Resultado de categorización: cards propias (control total de tipografía/color) */
+.ucc-result-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1.35fr 1fr;
+    gap: 0.85rem;
+    margin: 0.35rem 0 1rem 0;
 }
-div[data-testid="stMetricLabel"] {
-    font-size: 0.95rem !important;
-    color: var(--ucc-text) !important;
-}
-div[data-testid="stMetric"] {
+.ucc-metric-card {
     background: rgba(0, 102, 77, 0.10);
     border: 1px solid rgba(0, 102, 77, 0.28);
     border-radius: 12px;
-    padding: 0.85rem 1rem !important;
+    padding: 0.95rem 1.1rem;
 }
-/* Destacar especialmente la categoría (columna central) */
-div[data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="stMetric"] {
+.ucc-metric-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ucc-text);
+    margin-bottom: 0.35rem;
+}
+.ucc-metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--ucc-green-dark);
+    word-break: break-word;
+}
+.ucc-metric-category {
     background: var(--ucc-green);
     border-color: var(--ucc-green-dark);
 }
-div[data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="stMetricValue"],
-div[data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="stMetricLabel"] p,
-div[data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="stMetricLabel"] {
+.ucc-metric-category .ucc-metric-label,
+.ucc-metric-category .ucc-metric-value {
     color: #ffffff !important;
+}
+.ucc-metric-category .ucc-metric-value {
+    font-size: 1.55rem;
+}
+@media (max-width: 900px) {
+    .ucc-result-metrics { grid-template-columns: 1fr; }
 }
 </style>
 """
@@ -397,11 +406,26 @@ def main() -> None:
 
     st.markdown("---")
     st.subheader("Resultado de categorización")
-    col1, col2, col3 = st.columns([1, 1.35, 1])
-    col1.metric("Puntaje total", f"{total:.1f}")
-    # Texto más corto en el valor: el rótulo ya dice «Categoría»
-    col2.metric("Categoría", category_label(category).replace("Categoría ", "", 1))
-    col3.metric("Puntaje máximo teórico", "3550")
+    cat_short = category_label(category).replace("Categoría ", "", 1)
+    st.markdown(
+        f"""
+<div class="ucc-result-metrics">
+  <div class="ucc-metric-card">
+    <div class="ucc-metric-label">Puntaje total</div>
+    <div class="ucc-metric-value">{total:.1f}</div>
+  </div>
+  <div class="ucc-metric-card ucc-metric-category">
+    <div class="ucc-metric-label">Categoría</div>
+    <div class="ucc-metric-value">{cat_short}</div>
+  </div>
+  <div class="ucc-metric-card">
+    <div class="ucc-metric-label">Puntaje máximo teórico</div>
+    <div class="ucc-metric-value">3550</div>
+  </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
     if desc_cat:
         st.info(desc_cat)
 
