@@ -134,17 +134,36 @@ section[data-testid="stSidebar"] { background-color: var(--ucc-sidebar-bg); }
     border-radius: 8px !important;
     font-weight: 600 !important;
 }
-/* Evitar que st.metric corte «Categoría I — Investigador …» */
+/* Resultado de categorización: legible y destacado en verde UCCuyo */
 div[data-testid="stMetricValue"] {
-    font-size: 1.05rem !important;
-    line-height: 1.3 !important;
+    font-size: 1.45rem !important;
+    line-height: 1.35 !important;
     white-space: normal !important;
     overflow: visible !important;
     text-overflow: clip !important;
     word-break: break-word !important;
+    color: var(--ucc-green-dark) !important;
+    font-weight: 700 !important;
 }
 div[data-testid="stMetricLabel"] {
-    font-size: 0.85rem !important;
+    font-size: 0.95rem !important;
+    color: var(--ucc-text) !important;
+}
+div[data-testid="stMetric"] {
+    background: rgba(0, 102, 77, 0.10);
+    border: 1px solid rgba(0, 102, 77, 0.28);
+    border-radius: 12px;
+    padding: 0.85rem 1rem !important;
+}
+/* Destacar especialmente la categoría (columna central) */
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="stMetric"] {
+    background: var(--ucc-green);
+    border-color: var(--ucc-green-dark);
+}
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="stMetricValue"],
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="stMetricLabel"] p,
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="stMetricLabel"] {
+    color: #ffffff !important;
 }
 </style>
 """
