@@ -33,7 +33,6 @@ from report import (  # noqa: E402
 from section_caps import section_effective_max  # noqa: E402
 from category_equivalence import (  # noqa: E402
     build_equivalence_table,
-    build_reference_cases_table,
     load_category_equivalence,
 )
 from compare import build_comparison_report, export_comparison_excel  # noqa: E402
@@ -432,16 +431,11 @@ def main() -> None:
     equiv_config = load_category_equivalence(EQUIVALENCE_PATH)
     with st.expander("Equivalencia de categorías: UCCuyo (grilla) vs Anexo VII", expanded=False):
         st.caption(
-            "Misma denominación romana (I–VI), escalas distintas. "
-            "El automático usa Anexo VII (máx. 3550 pts); la grilla UCCuyo la cierra el Consejo."
+            "Denominación romana I–VI según Anexo VII (máx. 3550 pts). "
+            "La categoría la determina el puntaje automático del valorador."
         )
         st.markdown("#### Tabla de categorías y umbrales")
         st.dataframe(build_equivalence_table(equiv_config), use_container_width=True, hide_index=True)
-        st.markdown("#### Casos de referencia (validación interna)")
-        st.dataframe(build_reference_cases_table(equiv_config), use_container_width=True, hide_index=True)
-        grilla_note = equiv_config.get("grilla_uccuyo", {}).get("nota_escala", "")
-        if grilla_note:
-            st.info(grilla_note)
 
     st.markdown("---")
     st.subheader("Puntajes por sección")

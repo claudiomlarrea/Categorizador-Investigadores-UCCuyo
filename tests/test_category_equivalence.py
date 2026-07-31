@@ -30,6 +30,15 @@ def test_equivalence_table_has_six_categories(config):
     df = build_equivalence_table(config)
     assert len(df) == 6
     assert set(df["Categoría"]) == {"I", "II", "III", "IV", "V", "VI"}
+    assert "Umbral orientativo grilla UCCuyo" not in df.columns
+    assert "Escala grilla UCCuyo" not in df.columns
+    assert list(df.columns) == [
+        "Categoría",
+        "Denominación",
+        "Mín. Anexo VII",
+        "Escala Anexo VII",
+        "Descripción Anexo VII",
+    ]
 
 
 def test_reference_cases_include_cali(config):

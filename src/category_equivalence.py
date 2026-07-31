@@ -20,20 +20,14 @@ def load_category_equivalence(path: str) -> Dict[str, Any]:
 
 def build_equivalence_table(config: Dict[str, Any]) -> pd.DataFrame:
     anexo = config.get("anexo_vii", {})
-    grilla = config.get("grilla_uccuyo", {})
     rows: List[Dict[str, Any]] = []
     for cat in config.get("categorias", []):
-        umbral_grilla = cat.get("grilla_umbral_orientativo")
         rows.append(
             {
                 "Categoría": cat["code"],
                 "Denominación": cat["label"],
                 "Mín. Anexo VII": cat.get("anexo_min_points", 0),
                 "Escala Anexo VII": f"0–{anexo.get('max_points', 3550)}",
-                "Umbral orientativo grilla UCCuyo": (
-                    umbral_grilla if umbral_grilla is not None else "— (Consejo)"
-                ),
-                "Escala grilla UCCuyo": f"0–{grilla.get('max_points_orientativo', 600)} (orientativo)",
                 "Descripción Anexo VII": cat.get("descripcion_anexo", ""),
             }
         )
