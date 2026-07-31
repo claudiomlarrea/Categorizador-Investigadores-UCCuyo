@@ -398,7 +398,7 @@ def main() -> None:
         df_sec = df_sec.sort_values(["Puntaje (tope aplicado)", "Ocurrencias"], ascending=False)
         sec_rows = df_sec_tot[df_sec_tot["Sección"] == section_name]
         sec_sub = float(sec_rows["Subtotal"].iloc[0]) if not sec_rows.empty else 0.0
-        display_cols = ["Ítem", "Ocurrencias", "Puntaje (tope aplicado)", "Tope en sección"]
+        display_cols = ["Ítem", "Ocurrencias", "Puntaje (tope aplicado)", "Suma del ítem"]
         if debug:
             display_cols.append("Evidencia (1er match)")
         st.dataframe(df_sec[display_cols], use_container_width=True, hide_index=True)
@@ -415,19 +415,19 @@ def main() -> None:
         if has_uncapped:
             st.caption(
                 f"Máx. del apartado: **{int(sec_max)} pts**. "
-                "Algunos ítems no tienen tope fijo: en «Tope en sección» se muestra "
+                "Algunos ítems no tienen tope fijo: en «Suma del ítem» se muestra "
                 "el mismo valor que «Puntaje (tope aplicado)»; el subtotal del "
                 "apartado limita el total."
             )
         elif section_overflow:
             st.caption(
                 f"Cupo global de la sección: **{int(sec_max)} pts**. "
-                "Cada ítem tiene un tope dentro de ese cupo (columna «Tope en sección»)."
+                "Cada ítem tiene un tope dentro de ese cupo (columna «Suma del ítem»)."
             )
         elif item_topes_cfg > sec_max + 0.5:
             st.caption(
                 f"Cupo global de la sección: **{int(sec_max)} pts**. "
-                "La columna «Tope en sección» reparte ese cupo entre ítems (suma "
+                "La columna «Suma del ítem» reparte ese cupo entre ítems (suma "
                 f"**{int(sec_max)}**). Mientras el subtotal no lo supere, el puntaje "
                 "usa los topes individuales del Anexo VII."
             )

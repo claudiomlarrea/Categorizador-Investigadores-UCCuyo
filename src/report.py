@@ -84,7 +84,7 @@ def results_to_dataframe(item_results, criteria: Optional[Dict[str, Any]] = None
                 "Ocurrencias": r.count,
                 "Puntos unitarios": r.unit_points,
                 "Puntaje bruto": r.raw_points,
-                "Tope en sección": tope_display,
+                "Suma del ítem": tope_display,
                 "Puntaje (tope aplicado)": applied,
                 "Evidencia (1er match)": r.evidence,
             }
@@ -185,7 +185,7 @@ def export_word(
         doc.add_heading(section_name, level=2)
         df_s = filter_audit_items(df_items, criteria)
         df_s = df_s[df_s["Sección"] == section_name].copy()
-        cols = ["Ítem", "Ocurrencias", "Puntaje (tope aplicado)", "Tope en sección"]
+        cols = ["Ítem", "Ocurrencias", "Puntaje (tope aplicado)", "Suma del ítem"]
         if include_evidence:
             cols.append("Evidencia (1er match)")
 
