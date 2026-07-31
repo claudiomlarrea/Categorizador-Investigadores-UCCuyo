@@ -142,8 +142,8 @@
       "path_alt": "/Users/claudiolarrea/Downloads/este CV_ORG_1_CV-Laura Pizarro.pdf",
       "required": false,
       "category": "I",
-      "total_min": 2438,
-      "total_max": 2442,
+      "total_min": 2453,
+      "total_max": 2457,
       "cursos": 19,
       "articulos": 6,
       "libros": 0,
@@ -152,7 +152,7 @@
       "premios": 0,
       "eventos": 41,
       "investigador_proyecto": 4,
-      "gestion": 15
+      "gestion": 20
     },
     "larrea_2026": {
       "path": "../../Library/CloudStorage/OneDrive-Personal/01 Claudio/02 CV/2026/CVar Claudio Larrea 2026.pdf",

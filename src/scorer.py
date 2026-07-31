@@ -1002,11 +1002,12 @@ def _count_antecedentes_cyt(full_text: str) -> Tuple[Dict[str, int], Dict[str, s
         ):
             continue
         if re.search(
-            r"\b(?:Coordinador(?:a)?|Director(?:a)?|Secretari[oa]|Decan[oa]|Vicerrector(?:a)?|"
-            r"Rector(?:a)?|Consejer[oa]|Jefe\s+de|Subprograma|Asistente\s+Ejecutiv[a]?|"
+            r"\b(?:Coordinador(?:a)?|Coordinaci[oó]n\b|Director(?:a)?|Secretari[oa]|Decan[oa]|Vicerrector(?:a)?|"
+            r"Rector(?:a)?|Consejer[oa]|Jefe\s+de|Subprograma|Asistente\s+Ejecutiv[oa]?|"
             r"Asistente\s+de\s+Investigaci[oó]n|"
-            r"Miembro\s+(?:del\s+)?(?:comit[eé]|consejo)\s+de\s+investigaci[oó]n|"
-            r"Integrante\s+del\s+Comit[eé])\b",
+            r"Miembro\s+(?:del\s+)?(?:comit[eé]|consejo)(?:\s+ejecutivo)?(?:\s+de\s+investigaci[oó]n)?|"
+            r"Integrante\s+del\s+Comit[eé]|"
+            r"Miembro\s+del\s+Equipo\s+(?:de\s+)?Coordinaci[oó]n)\b",
             snippet,
             re.I,
         ):

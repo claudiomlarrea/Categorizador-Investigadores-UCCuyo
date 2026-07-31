@@ -54,29 +54,11 @@ def filter_audit_items(
 
 
 def results_to_dataframe(item_results, criteria: Optional[Dict[str, Any]] = None) -> pd.DataFrame:
-    display_caps: Dict[tuple, Optional[int]] = {}
-    if criteria:
-        for sec_name, cfg in criteria.get("sections", {}).items():
-            names = list(cfg.get("items", {}).keys())
-            for item_name, cap in allocate_section_item_caps(cfg, names).items():
-                display_caps[(sec_name, item_name)] = cap
-
     rows = []
     for r in item_results:
         applied = int(r.capped_item_points)
-        tope = display_caps.get((r.section, r.item))
-        if tope is None and criteria:
-            cfg = criteria.get("sections", {}).get(r.section, {})
-            item_cfg = cfg.get("items", {}).get(r.item, {})
-            if float(item_cfg.get("max_points", r.item_max_points)) < 0:
-                # Ítem sin tope fijo: mostrar el puntaje aplicado (evita "—").
-                tope_display: Any = applied
-            else:
-                tope_display = int(r.item_max_points) if r.item_max_points >= 0 else applied
-        elif tope is None:
-            tope_display = applied if r.item_max_points < 0 else int(r.item_max_points)
-        else:
-            tope_display = int(tope)
+        # «Suma del ítem» = puntaje efectivamente sumado (igual a tope aplicado).
+        # Evita mostrar topes residuales (p.ej. 120) cuando hay 0 ocurrencias.
         rows.append(
             {
                 "Sección": r.section,
@@ -84,7 +66,7 @@ def results_to_dataframe(item_results, criteria: Optional[Dict[str, Any]] = None
                 "Ocurrencias": r.count,
                 "Puntos unitarios": r.unit_points,
                 "Puntaje bruto": r.raw_points,
-                "Suma del ítem": tope_display,
+                "Suma del ítem": applied,
                 "Puntaje (tope aplicado)": applied,
                 "Evidencia (1er match)": r.evidence,
             }
