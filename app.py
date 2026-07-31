@@ -134,6 +134,18 @@ section[data-testid="stSidebar"] { background-color: var(--ucc-sidebar-bg); }
     border-radius: 8px !important;
     font-weight: 600 !important;
 }
+/* Evitar que st.metric corte «Categoría I — Investigador …» */
+div[data-testid="stMetricValue"] {
+    font-size: 1.05rem !important;
+    line-height: 1.3 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    word-break: break-word !important;
+}
+div[data-testid="stMetricLabel"] {
+    font-size: 0.85rem !important;
+}
 </style>
 """
 
@@ -366,9 +378,10 @@ def main() -> None:
 
     st.markdown("---")
     st.subheader("Resultado de categorización")
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3 = st.columns([1, 1.35, 1])
     col1.metric("Puntaje total", f"{total:.1f}")
-    col2.metric("Categoría", category_label(category))
+    # Texto más corto en el valor: el rótulo ya dice «Categoría»
+    col2.metric("Categoría", category_label(category).replace("Categoría ", "", 1))
     col3.metric("Puntaje máximo teórico", "3550")
     if desc_cat:
         st.info(desc_cat)
