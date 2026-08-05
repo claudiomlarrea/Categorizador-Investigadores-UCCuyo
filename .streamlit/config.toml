@@ -6,7 +6,6 @@ textColor = "#262730"
 font = "sans serif"
 
 [ui]
-hideSidebarNav = true
 hideTopBar = true
 
 [client]
