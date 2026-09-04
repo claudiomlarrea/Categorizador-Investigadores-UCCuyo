@@ -39,6 +39,7 @@ try:
         parse_formacion_rrhh,
         parse_otros_antecedentes,
         parse_publicaciones_extended,
+        _parse_premios_eventos,
     )
 except ModuleNotFoundError:
     import sys
@@ -55,6 +56,7 @@ except ModuleNotFoundError:
         parse_formacion_rrhh,
         parse_otros_antecedentes,
         parse_publicaciones_extended,
+        _parse_premios_eventos,
     )
 
 SCHEMA_VERSION = "1.1"
@@ -189,7 +191,7 @@ def _parse_formacion_items(block: str) -> List[Dict[str, Any]]:
         items.append(
             {
                 "tipo": tipo,
-                "titulo": sc._first_line(entry),
+                "titulo": sc._title_head_line(entry),
                 "finalizado": sc._entry_completed(entry),
                 "texto": re.sub(r"\s+", " ", entry.strip())[:500],
             }
@@ -467,6 +469,17 @@ def parse_cvar(
     if evt_block:
         _append_trabajos_evento_from_block(pub_parsed, evt_block)
 
+    eventos_parsed = parse_eventos_cyt(evt_block)
+    # Premios suele vivir bajo Antecedentes EN CYT (sin pestaña EVENTOS)
+    if not eventos_parsed.get("premios"):
+        for src in (ant_block, text):
+            premios = _parse_premios_eventos(src)
+            if premios:
+                eventos_parsed["premios"] = premios
+                eventos_parsed.setdefault("counts", {})["premios"] = len(premios)
+                eventos_parsed.setdefault("evidence", {})["premios"] = premios[0]["texto"]
+                break
+
     parsed_items: Dict[str, Any] = {
         "formacion_academica": {
             "titulos": _parse_formacion_items(form_block),
@@ -482,7 +495,7 @@ def parse_cvar(
         "financiamiento_cyt": parse_financiamiento(fin_block),
         "evaluacion_gestion": parse_evaluacion_gestion(ev_block),
         "extension": parse_extension(ext_block),
-        "eventos_cyt": parse_eventos_cyt(evt_block),
+        "eventos_cyt": eventos_parsed,
         "actividades_profesionales": parse_actividades_profesionales(ap_block),
         "otros_antecedentes": parse_otros_antecedentes(otros_block),
         "publicaciones": pub_parsed,

@@ -21,7 +21,7 @@
           "max_points": -1
         },
         "Especialización (finalizada)": {
-          "pattern": "(?is)(?:(?:Especializaci[oó]n\\b|Especialidad\\b)(?![\\s\\S]{0,120}?(?:Diplomatura|Diplomado|Diploma)))[\\s\\S]{0,900}?(?:A(?:ñ|n)o\\s+de\\s+(?:finalizaci[oó]n|obtenci[oó]n|graduaci[oó]n)\\s*[:\\-–]?\\s*(?:\\d{2}/\\d{4}|19\\d{2}|20\\d{2})|Situaci[oó]n\\s+del\\s+nivel\\s*[:\\-–]?\\s*Completo|\\b(finalizad[oa]|egresad[oa]|graduad[oa]|t[ií]tulo\\s+obtenido|t[ií]tulo\\s+otorgado)\\b)(?![\\s\\S]{0,120}?(?:Actualidad|En\\s+curso|Cursando))",
+          "pattern": "(?is)(?:(?:Especializaci[oó]n\\b|Especialidad\\b|Posgrado\\b|Postgrado\\b)(?![\\s\\S]{0,40}?(?:Doctorado|Posdoctorado|Postdoctorado))(?![\\s\\S]{0,120}?(?:Diplomatura|Diplomado|Diploma)))[\\s\\S]{0,900}?(?:A(?:ñ|n)o\\s+de\\s+(?:finalizaci[oó]n|obtenci[oó]n|graduaci[oó]n)\\s*[:\\-–]?\\s*(?:\\d{2}/\\d{4}|19\\d{2}|20\\d{2})|Situaci[oó]n\\s+del\\s+nivel\\s*[:\\-–]?\\s*Completo|\\b(finalizad[oa]|egresad[oa]|graduad[oa]|t[ií]tulo\\s+obtenido|t[ií]tulo\\s+otorgado)\\b)(?![\\s\\S]{0,120}?(?:Actualidad|En\\s+curso|Cursando))",
           "unit_points": 100,
           "max_points": -1
         },
@@ -271,7 +271,7 @@
           "max_points": 80
         },
         "Premios / menciones": {
-          "pattern": "(?ims)^\\s*(?:\\d{4}|\\d{2}/\\d{4})\\s*(?:-|–)?\\s*(?:Actualidad|\\d{4}|\\d{2}/\\d{4})?.*?(?:Premio\\b|Menci[oó]n\\b|Distinci[oó]n\\b|Reconocimiento\\b|Galard[oó]n\\b)[\\s\\S]*?(?=^\\s*(?:\\d{4}|\\d{2}/\\d{4})\\s*(?:-|–)?\\s*|\\Z)",
+          "pattern": "(?ims)^\\s*(?:\\d{4}|\\d{2}/\\d{4})\\s*(?:-|–)?\\s*(?:Actualidad|\\d{4}|\\d{2}/\\d{4})?.*?(?:Premio\\b|Menci[oó]n\\b|Distinci[oó]n\\b|Reconocimiento\\b|Galard[oó]n\\b|Diploma\\s+de\\s+Honor\\b)[\\s\\S]*?(?=^\\s*(?:\\d{4}|\\d{2}/\\d{4})\\s*(?:-|–)?\\s*|\\Z)",
           "unit_points": 10,
           "max_points": 40
         }

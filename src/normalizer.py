@@ -24,7 +24,12 @@ RE_CVAR_BOILERPLATE_LINE = re.compile(
 RE_PAGE_NUMBER_LINE = re.compile(r"^\s*\d{1,3}\s*$")
 RE_CVAR_NAME_REPEAT = re.compile(
     r"^[A-ZÁÉÍÓÚÜÑ][A-ZÁÉÍÓÚÜÑ\s.'-]+,\s*[A-ZÁÉÍÓÚÜÑ][A-ZÁÉÍÓÚÜÑ\s.'-]+$",
-    re.MULTILINE,
+)
+RE_CVAR_TITLE_TOKEN = re.compile(
+    r"\b(?:DOCTOR(?:A|ADO)?|LICENCIAD[OA]|MAESTR[IÍ]A|MAG[IÍ]STER|MAGISTER|"
+    r"INGENIER[OA]|CONTADOR(?:A)?|ABOGAD[OA]|PROFESOR(?:A|ADO)?|POSGRADO|POSTGRADO|"
+    r"ESPECIALIZACI[OÓ]N|DIPLOMATURA|MENCI[OÓ]N)\b",
+    re.IGNORECASE,
 )
 
 @dataclass
@@ -62,7 +67,7 @@ def normalize_text(raw_text: str, opts: Optional[NormalizeOptions] = None) -> st
             continue
         if RE_PAGE_NUMBER_LINE.match(stripped):
             continue
-        if RE_CVAR_NAME_REPEAT.match(stripped):
+        if RE_CVAR_NAME_REPEAT.match(stripped) and not RE_CVAR_TITLE_TOKEN.search(stripped):
             continue
         cleaned_lines.append(stripped)
     text = "\n".join(cleaned_lines)
@@ -238,8 +243,10 @@ def _guess_formacion_type(entry: str) -> str:
     if re.search(r"\bmaestr[ií]a\b|\bmag[ií]ster\b|\bmaster\b|\bmáster\b", e):
         return "MAESTRÍA"
 
-    # Especialización / Especialista
+    # Especialización / Especialista / Posgrado (no posdoctorado)
     if re.search(r"\bespecializaci[oó]n\b|\bespecialista\b", e):
+        return "ESPECIALIZACIÓN"
+    if re.search(r"\bpos(?:t)?grado\b", e) and not re.search(r"\bpos(?:t)?doctor", e):
         return "ESPECIALIZACIÓN"
 
     # Profesorado

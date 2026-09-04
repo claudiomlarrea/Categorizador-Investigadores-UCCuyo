@@ -46,6 +46,7 @@ def _analyze(pdf_path: Path) -> dict:
     fin = counts.get("financiamiento", {})
     ev = structured["items"]["eventos_cyt"].get("counts", {})
     pub = structured["items"]["publicaciones"].get("counts", {})
+    form = counts.get("formacion", {}) or {}
     return {
         "category": category,
         "total": total,
@@ -59,6 +60,10 @@ def _analyze(pdf_path: Path) -> dict:
         "eventos": ev.get("eventos", 0),
         "investigador_proyecto": fin.get("investigador_proyecto", 0),
         "gestion": counts.get("antecedentes_gestion", 0),
+        "formacion_doctorado": form.get("doctorado", 0),
+        "formacion_maestria": form.get("maestria", 0),
+        "formacion_especializacion": form.get("especializacion", 0),
+        "formacion_grado": form.get("grado", 0),
     }
 
 
@@ -106,3 +111,14 @@ def test_cvar_regression(key, spec, pdf_path):
         assert result["articulos_doi"] == spec["articulos_doi"], (
             f"{key}: articulos_doi esperado {spec['articulos_doi']}, obtuvo {result['articulos_doi']}"
         )
+
+    for field in (
+        "formacion_doctorado",
+        "formacion_maestria",
+        "formacion_especializacion",
+        "formacion_grado",
+    ):
+        if field in spec:
+            assert result[field] == spec[field], (
+                f"{key}: {field} esperado {spec[field]}, obtuvo {result[field]}"
+            )

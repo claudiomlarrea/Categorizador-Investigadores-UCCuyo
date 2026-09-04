@@ -212,6 +212,8 @@ _RE_ENTRY_START = re.compile(
     r"Doctorado|Doctor\s+en|Doctor\s+de\s+la\s+Universidad|Doctor(?:a)?\b|"
     r"Maestr[ií]a|Mag[ií]ster|Magister|M[aá]ster|Master\s+of|Master\s+in|MSc|MBA|"
     r"Especializaci[oó]n|Especialidad|Especialista|"
+    # Posgrado/Postgrado (no Posdoctorado: ya listado arriba)
+    r"Posgrado|Postgrado|"
     r"Profesorado|Profesor\s+Superior|Profesor\s+Universitario|Profesor(?:a)?\s+en|"
     r"Abogad[oa]s?|Notari[ao]s?|"
     r"Licenciatura|Licenciad[oa](?:\s+en)?|"
@@ -228,6 +230,7 @@ _TITLE_ENTRY_ANCHORS = (
     r"Doctorado|Doctor\s+en|Doctor\s+de\s+la\s+Universidad|Doctor(?:a)?\b|"
     r"Maestr[ií]a|Mag[ií]ster|Magister|M[aá]ster|Master\s+of|Master\s+in|MSc|MBA|"
     r"Especializaci[oó]n|Especialidad|Especialista|"
+    r"Posgrado|Postgrado|"
     r"Profesorado|Profesor\s+Superior|Profesor\s+Universitario|Profesor(?:a)?\s+en|"
     r"Abogad[oa]s?|Notari[ao]s?|"
     r"Licenciatura|Licenciad[oa](?:\s+en)?|"
@@ -365,6 +368,31 @@ def _first_line(entry: str) -> str:
     return ""
 
 
+def _title_head_line(entry: str) -> str:
+    """Primera línea útil del título (salta pie CVar / repetición de apellido,Nombre)."""
+    lines: List[str] = []
+    for l in entry.splitlines():
+        l = l.strip()
+        if not l or l.lower() == "null":
+            continue
+        if _RE_NOISE_LINE.search(l):
+            continue
+        lines.append(l)
+    # Preferir línea con ancla de titulación (Doctorado, Licenciatura, Posgrado, …)
+    for l in lines:
+        if _RE_ENTRY_HEADER_LINE.search(l):
+            return l
+    # Si no hay ancla, saltar cabeceras tipo "APELLIDO, NOMBRE" (sin espacios en apellido)
+    name_hdr = re.compile(
+        r"^[A-ZÁÉÍÓÚÜÑ][A-ZÁÉÍÓÚÜÑ'.-]{1,40},\s*[A-ZÁÉÍÓÚÜÑ][A-ZÁÉÍÓÚÜÑ\s'.-]{0,80}$"
+    )
+    for l in lines:
+        if name_hdr.match(l):
+            continue
+        return l
+    return lines[0] if lines else _first_line(entry)
+
+
 def _has_institution_anchor(entry: str) -> bool:
     return bool(_RE_INST_ANCHOR.search(entry))
 
@@ -375,15 +403,18 @@ def _classify_structural(entry: str) -> str:
 
     Reglas:
     - Diplomaturas siempre primero (no son grado ni posgrado)
-    - Doctorado / Maestría / Especialización explícitos
+    - Doctorado / Maestría / Especialización / Posgrado explícitos
     - Profesor en Enseñanza Media y Superior = TÍTULO DE GRADO
     - Profesorado SOLO si dice explícitamente 'Profesorado'
     - Grado SOLO si hay FACULTAD/UNIVERSIDAD + finalización
     """
 
-    head = _first_line(entry).lower()
+    head = _title_head_line(entry).lower()
 
     # 1️⃣ Diplomaturas (siempre excluidas de grado/posgrado)
+    # No confundir "Diploma de Honor" (premio) con diplomatura académica.
+    if re.search(r"\bdiploma\s+de\s+honor\b", head):
+        return "otro"
     if re.search(r"\bdiplomatur|\bdiplomad|\bdiploma\b", head):
         return "diplomatura"
 
@@ -401,6 +432,11 @@ def _classify_structural(entry: str) -> str:
 
     # 3b Posgraduado (CVAR usa "POS GRADUADO" para especializaciones)
     if re.search(r"\bpos[\s\-]?graduad|\bpost[\s\-]?graduad", head):
+        return "especializacion"
+
+    # 3c Posgrado / Postgrado académico (p. ej. "Posgrado en Digital Accounting")
+    # No Posdoctorado (ya cubierto arriba vía doctorad).
+    if re.search(r"\bpos(?:t)?grado\b", head) and not re.search(r"\bpos(?:t)?doctor", head):
         return "especializacion"
 
     # 4️⃣ Especialización
@@ -456,15 +492,20 @@ _PUB_SUBSECTION_END = [
 ]
 
 _RE_EVENTO_EN_PUBLICACION = re.compile(
-    r"(?i)\b(?:En\s+(?:Libro\s+de\s+Resúmenes|Libro\s+de\s+Resumenes|ACTAS|Actas|Congreso|Jornadas|"
-    r"Symposium|Meeting|Workshop|Taller|BIOCELL|Biocell)|Presentado en el evento)\b",
+    r"(?i)(?:"
+    r"\bEn\s+(?:Libro\s+de\s+Resúmenes|Libro\s+de\s+Resumenes|ACTAS|Actas)\b|"
+    # "En VI Congreso…", "En XXXVII CONFERENCIA…", "En Congreso…"
+    r"\bEn\s+(?:[IVXLCDM0-9]+\.?\s+)*(?:Congreso|Conferencia|Jornadas|Simposio|Symposium|"
+    r"Meeting|Workshop|Taller|BIOCELL|Biocell)\b|"
+    r"\bPresentado en el evento\b"
+    r")",
 )
 
 _RE_VENUE_TRABAJO_EVENTO = re.compile(
     r"(?i)(?:"
     r"\bactas\b|"
     r"\blibro\s+de\s+(?:actas|resúmenes|resumenes)\b|"
-    r"\b(?:jornadas|simposio|symposium|meeting|workshop|taller)\b|"
+    r"\b(?:jornadas|simposio|symposium|meeting|workshop|taller|conferencia)\b|"
     r"\bcongreso\s+(?:internacional|nacional|latinoamericano|de|del)\b|"
     r"\bproceedings\b"
     r")",
@@ -1132,7 +1173,7 @@ def _count_formacion(full_text: str) -> Tuple[Dict[str, int], Dict[str, str]]:
         if not _entry_completed(e):
             continue
 
-        title = _first_line(e)
+        title = _title_head_line(e)
         fin = _finish_token(e)
         key = (tipo, _norm_key(title), _norm_key(fin))
         if key in seen:

@@ -388,7 +388,12 @@ def _parse_premios_eventos(block: str) -> List[Dict[str, Any]]:
     m = re.search(r"(?is)\bPremios\b(.*)", block or "")
     if not m:
         return []
-    tail = m.group(1).strip()
+    # Cortar antes de PUBLICACIONES / otras pestañas siguientes
+    tail = re.split(
+        r"(?is)\b(?:PUBLICACIONES|PRODUCCIONES\s+Y\s+SERVICIOS|FORMACI[ÓO]N\s+DE\s+RECURSOS|"
+        r"OTROS\s+ANTECEDENTES|PARTICIPACI[ÓO]N\s+EN\s+EVENTOS)\b",
+        m.group(1),
+    )[0].strip()
     if not tail:
         return []
     entries = re.split(r"(?im)(?=^\d{4}\s*[-–]\s+)", tail)
@@ -397,6 +402,9 @@ def _parse_premios_eventos(block: str) -> List[Dict[str, Any]]:
         entries = [tail]
     premios: List[Dict[str, Any]] = []
     for entry in entries:
+        # "Jurado de premios" es rol de evaluación, no un premio obtenido
+        if re.search(r"jurado\s+de\s+premios", entry, re.I):
+            continue
         if re.search(
             r"puesto|premio|menci[oó]n|distinci[oó]n|galard[oó]n|ponencia|accesit|\d{1,2}[º°o]\.|"
             r"diploma\s+de\s+honor|miembro\s+honorari[oa]|honor\s+por|reconocimiento|medalla",

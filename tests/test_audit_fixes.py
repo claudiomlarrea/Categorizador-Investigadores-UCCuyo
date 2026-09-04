@@ -31,8 +31,45 @@ def test_premios_diploma_honor():
     assert len(premios) == 1
 
 
+def test_premios_ignora_jurado_de_premios():
+    block = "Premios\n2016 - 2019 Jurado de premios Rol: Evaluador/a"
+    assert _parse_premios_eventos(block) == []
+
+
 def test_posgraduado_es_especializacion():
     assert _classify_structural("POS GRADUADO EN ENFERMERÍA\nUniversidad Nacional de Cuyo") == "especializacion"
+
+
+def test_posgrado_en_digital_accounting_es_especializacion():
+    entry = (
+        "Posgrado en Digital Accounting\n"
+        "UNIVERSIDAD DEL CEMA (UCEMA)\n"
+        "Año de finalización: 2025"
+    )
+    assert _classify_structural(entry) == "especializacion"
+
+
+def test_doctora_con_cabecera_nombre_no_es_grado():
+    entry = (
+        "PASTERIS, ELIZABETH CARMEN\n"
+        "DOCTORA EN CIENCIAS ECONÓMICAS, MENCIÓN ECONOMÍA\n"
+        "FACULTAD DE CIENCIAS ECONOMICAS ; UNIVERSIDAD NACIONAL DE CUYO\n"
+        "Año de finalización: 2015"
+    )
+    assert _classify_structural(entry) == "doctorado"
+
+
+def test_normalizer_no_borra_doctora_con_mencion():
+    from normalizer import normalize_text
+
+    raw = (
+        "DATOS PERSONALES\nApellido: X\nFORMACION ACADÉMICA\n"
+        "DOCTORA EN CIENCIAS ECONÓMICAS, MENCIÓN ECONOMÍA\n"
+        "FACULTAD DE CIENCIAS ECONOMICAS\n"
+        "Año de finalización: 2015\n"
+    )
+    out = normalize_text(raw)
+    assert "DOCTORA EN CIENCIAS ECONÓMICAS" in out
 
 
 def test_split_traducciones_tras_tesis():
